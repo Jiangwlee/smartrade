@@ -1,5 +1,10 @@
+from crawlers.utils.logger import getLogger
+
+logger = getLogger()
+
 def crawl():
-    print("Hello world, let's crawl")
+    logger.info("Hello world, let's crawl")
+
 
 if __name__ == '__main__':
-    print("Hello world, this is smartrade crawler")
+    crawl()
