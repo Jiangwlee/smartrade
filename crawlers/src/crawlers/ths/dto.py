@@ -87,3 +87,30 @@ class LimitUpRespDataModel(BaseModel):
     limit_up_count: StockDayOverDaySummary
     limit_down_count: StockDayOverDaySummary
     date: str
+
+class StockConceptInfo(BaseModel):
+    code: str = Field(..., description="股票代码")
+    name: str = Field(..., description="股票名称")
+    concept: str = Field(..., description="概念板块")
+    reason_type: str = Field(..., description="涨停原因分类, 用加号分隔")
+    reason_info: str = Field(..., description="详细涨停原因")
+
+class TopBlocksInfo(BaseModel):
+    code: str = Field(..., description="板块代码")
+    name: str = Field(..., description="板块名称")
+    change: float = Field(..., description="板块涨幅")
+    limit_up_num: int = Field(..., description="板块涨停数量")
+    continuous_plate_num: int = Field(..., description="持续上榜天数")
+    high: str = Field(..., description="最高几天几板")
+    days: int = Field(..., description="天数")
+    stock_list: List[StockConceptInfo]
+
+class StockContinuousInfo(BaseModel):
+    code: str = Field(..., description="板块代码")
+    name: str = Field(..., description="板块名称")
+    market_id: int = Field(..., description="市场ID")
+    continue_num: int = Field(..., description="连板天数")
+
+class LimitUpLadderInfo(BaseModel):
+    height: int = Field(..., description="连板天数")
+    code_list: List[StockContinuousInfo]
