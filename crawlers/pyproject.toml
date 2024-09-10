@@ -42,6 +42,7 @@ extra-dependencies = [
   "mypy>=1.0.0",
   "requests>=2.32.3",
   "pydantic>=2.9.1",
+  "mysql-connector-python>=9.0.0"
 ]
 [tool.hatch.envs.types.scripts]
 check = "mypy --install-types --non-interactive {args:src/crawlers tests}"

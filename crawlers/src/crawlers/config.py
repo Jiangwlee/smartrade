@@ -20,3 +20,17 @@ if os.name == 'posix':
 CONSOLE_HANDLER = logging.StreamHandler()
 CONSOLE_HANDLER.setFormatter(FORMATTER)
 CONSOLE_HANDLER.setLevel(logging.DEBUG)
+
+##########################################
+# 数据库配置
+##########################################
+DB_HOST="localhost"
+DB_USER="jfsok"
+DB_PASSWORD="iTbpamPcUYeqkY9k63rQ"
+DB_DATABASE="smartrade"
+DB_CONFIG = {
+    "user": DB_USER,
+    "password": DB_PASSWORD,
+    "host": DB_HOST,
+    "database": DB_DATABASE
+}
