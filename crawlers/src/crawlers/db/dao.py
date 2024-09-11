@@ -10,6 +10,9 @@ from crawlers.ths.dto import LimitDownStockModel, LimitUpStockModel
 
 log = getLogger()
 
+"""
+跌停板数据库访问层 (Data Access Layer)
+"""
 class LimitDownkDao:
     def __init__(self) -> None:
         self.insert_query = ("INSERT INTO limit_down_stocks (code, name, change_rate, first_limit_down_time, last_limit_down_time, turnover_rate, currency_value) "
