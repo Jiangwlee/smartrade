@@ -6,3 +6,6 @@ def today():
         
 def timestampInMilliseconds():
     return int(time.time() * 1000)
+
+def timestampToDate(timestamp: str) -> datetime:
+    return datetime.fromtimestamp(int(timestamp))

@@ -33,15 +33,16 @@ log = getLogger()
 
 
 class LimitUpCrawler(CrawlerBase):
-    def __init__(self) -> None:
+    def __init__(self, date=today()) -> None:
+        self.date = date
         self.base_url = "http://data.10jqka.com.cn/dataapi/limit_up/limit_up_pool?limit=20&field=199112,10,9001,330323,330324,330325,9002,330329,133971,133970,1968584,3475914,9003"
-        self.url_formatter = "&page={page}&filter=HS,GEM2STAR&order_field=330324&order_type=0&date={today}&_={timestamp_milliseconds}"
+        self.url_formatter = "&page={page}&filter=HS,GEM2STAR&order_field=330324&order_type=0&date={date}&_={timestamp_milliseconds}"
 
-    def getUrl(self, page, date, timestamp):
-        return self.base_url + self.url_formatter.format(page=page, today=date, timestamp_milliseconds=timestamp)
+    def getUrl(self, page, timestamp):
+        return self.base_url + self.url_formatter.format(page=page, date=self.date, timestamp_milliseconds=timestamp)
 
     def crawlPage(self, page: int, result: list) -> LimitUpRespDataModel:
-        url = self.getUrl(page, today(), timestampInMilliseconds())
+        url = self.getUrl(page, timestampInMilliseconds())
         
         log.info(f"爬取涨停板数据, URL: {url}")
         response = requests.get(url)
