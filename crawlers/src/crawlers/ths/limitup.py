@@ -22,6 +22,7 @@ Version:
 """
 
 import requests
+from typing import List
 from crawlers.utils.logger import getLogger
 from crawlers.utils.dateutil import today, timestampInMilliseconds
 from crawlers.ths.dto import LimitUpRespDataModel

@@ -112,8 +112,8 @@ class TopBlocksInfo(BaseModel):
     stock_list: List[StockConceptInfo]
 
 class StockContinuousInfo(BaseModel):
-    code: str = Field(..., description="板块代码")
-    name: str = Field(..., description="板块名称")
+    code: str = Field(..., description="股票代码")
+    name: str = Field(..., description="股票名称")
     market_id: int = Field(..., description="市场ID")
     continue_num: int = Field(..., description="连板天数")
 

@@ -34,10 +34,10 @@ log = getLogger()
 最强板块爬虫
 """
 class TopBlockCrawler(CrawlerBase):
-    def __init__(self) -> None:
-        self.url = f"http://data.10jqka.com.cn/dataapi/limit_up/block_top?filter=HS,GEM2STAR&date={today()}"
+    def __init__(self, datestr: str = today()) -> None:
+        self.url = f"http://data.10jqka.com.cn/dataapi/limit_up/block_top?filter=HS,GEM2STAR&date={datestr}"
 
-    def crawl(self) -> List[CrawlerBase]:
+    def crawl(self) -> List[TopBlocksInfo]:
         response = requests.get(self.url)
 
         if response.status_code == 200:

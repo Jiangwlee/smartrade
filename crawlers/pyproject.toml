@@ -24,7 +24,11 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
-dependencies = []
+dependencies = [
+  "requests>=2.32.3",
+  "pydantic>=2.9.1",
+  "mysql-connector-python>=9.0.0"
+]
 
 [project.urls]
 Documentation = "https://github.com/Jiangwlee/smartrade/blob/main/README.md"
@@ -40,12 +44,17 @@ path = "src/crawlers/__about__.py"
 [tool.hatch.envs.types]
 extra-dependencies = [
   "mypy>=1.0.0",
-  "requests>=2.32.3",
-  "pydantic>=2.9.1",
-  "mysql-connector-python>=9.0.0"
 ]
 [tool.hatch.envs.types.scripts]
 check = "mypy --install-types --non-interactive {args:src/crawlers tests}"
+
+[[tool.hatch.envs.hatch-test.matrix]]
+python = ["3.12.6"]
+default-args = ["tests"]
+extra-args = ["-vv"]
+
+[tool.hatch.envs.hatch-test.scripts]
+run = "pytest{env:HATCH_TEST_ARGS:} {args}"
 
 [tool.coverage.run]
 source_pkgs = ["crawlers", "tests"]

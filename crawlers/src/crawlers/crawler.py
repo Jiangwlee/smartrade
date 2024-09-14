@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+
 """
 爬虫的接口.
 """

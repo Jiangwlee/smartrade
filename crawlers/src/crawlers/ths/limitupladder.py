@@ -31,10 +31,11 @@ from crawlers.crawler import CrawlerBase
 log = getLogger()
 
 class LimitUpLadderCrawler(CrawlerBase):
-    def __init__(self) -> None:
-        self.url = f"https://data.10jqka.com.cn/dataapi/limit_up/continuous_limit_up?filter=HS,GEM2STAR&date={today()}"
+    def __init__(self, datestr: str = today()) -> None:
+        self.url = f"https://data.10jqka.com.cn/dataapi/limit_up/continuous_limit_up?filter=HS,GEM2STAR&date={datestr}"
 
-    def crawl(self) -> List[CrawlerBase]:
+    def crawl(self) -> List[LimitUpLadderInfo]:
+        log.info(f"爬取连板天梯, URL: {self.url}")
         response = requests.get(self.url)
 
         if response.status_code == 200:
@@ -48,7 +49,8 @@ class LimitUpLadderCrawler(CrawlerBase):
 
 
 if __name__ == '__main__':
-    spider = LimitUpLadderCrawler()
+    spider = LimitUpLadderCrawler('20240913')
     result = spider.crawl()
     for item in result:
         print(f"连板高度：{item.height}, 涨停数量: {len(item.code_list)}")
+        print(f"{item}")

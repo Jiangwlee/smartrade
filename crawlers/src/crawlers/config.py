@@ -7,7 +7,7 @@ from logging.handlers import RotatingFileHandler
 ##########################################
 
 # 日志格式
-FORMATTER = logging.Formatter('%(asctime)s - %(name)s - %(module)s - %(levelname)s - %(message)s')
+FORMATTER = logging.Formatter('[%(levelname)-8s] - %(asctime)s - %(name)s - %(module)-14s| %(message)s')
 
 # 文件日志格式
 FILE_HANDLER = None
