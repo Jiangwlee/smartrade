@@ -8,6 +8,7 @@ from crawlers.db.connector import getConnection
 from crawlers.utils.dateutil import timestampToDatetime
 from crawlers.utils.logger import getLogger
 from crawlers.ths.dto import LimitDownRespDataModel, LimitUpRespDataModel, LimitUpLadderInfo, TopBlocksInfo
+from crawlers.jrj.dto import StockHangQingInfo
 
 log = getLogger()
 
@@ -26,15 +27,14 @@ class BaseDao(ABC):
         except Exception as ex:
             log.error(ex)
 
-    def contains(self, date: str, code: str):
-        log.info(f"检查 {self._table} 中 {date} 是否有关于 {code} 的记录")
-        query = (f"SELECT COUNT(*) FROM {self._table} WHERE date=%s AND code=%s")
+    def getItemsByDate(self, date: str):
+        log.info(f"正在查询 {self._table} 中 {date} 的记录")
+        query = f"SELECT * FROM {self._table} WHERE date=%s"
         try:
             with getConnection() as connection:
                 with connection.cursor() as cursor:
-                    cursor.execute(query, (date, code))
-                    result = cursor.featchAll()
-                    return result[0] > 0
+                    cursor.execute(query, (date, ))
+                    return cursor.fetchall()
         except Exception as ex:
             log.error(ex)
     
@@ -185,11 +185,43 @@ class TopBlockStocksDao(BaseDao):
         except Exception as ex:
             log.error(ex)
 
+"""
+集合竞价数据访问层(Data Access Layer)
+"""
+class StockHangQingkDao(BaseDao):
+    def __init__(self):
+        super().__init__("stock_hangqing")
+        self._insert_query = (f"INSERT INTO {self._table} (time, date, code, name, amount, volume, avg_price, high_price, low_price, open_price, close_price, pre_close_price) "
+                             "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
+    
+    def insert(self, date:str, hangqing_list: List[StockHangQingInfo]):
+        log.info(f"Inserting data into table {self._table}")
+        try:
+            data = [(timestampToDatetime(s.time), date, s.code, s.name, s.amount, s.volume, s.avg_price, s.high_price, s.low_price, s.open_price, s.close_price, s.pre_close_price) for s in hangqing_list]
+            with getConnection() as connection:
+                with connection.cursor() as cursor:
+                    cursor.executemany(self._insert_query, data)
+                    connection.commit()
+        except Exception as ex:
+            log.error(ex)
+
+    def getHangQingByDateAndCode(self, date: str, code: str):
+        log.info(f"Selecting data from table {self._table} by date {date} and code {code}")
+        query = f"SELECT code, name, UNIX_TIMESTAMP(time), 0, amount, volume, avg_price, high_price, low_price, open_price, close_price, pre_close_price FROM {self._table} WHERE `date` = %s AND code = %s"
+        try:
+            with getConnection() as connection:
+                with connection.cursor() as cursor:
+                    cursor.execute(query, (date, code))
+                    return cursor.fetchall()
+        except Exception as ex:
+            log.error(ex)
+
 if __name__ == '__main__':
-    from crawlers.ths.blocktop import TopBlockCrawler
+    from crawlers.jrj.hangqing import HangQingCrawler, HangQingType
     date = '20240910'
-    spider = TopBlockCrawler(date)
+    spider = HangQingCrawler('603883', '老百姓', '20240912', HangQingType.ONE_M, 1)
     result = spider.crawl()
-    dao = TopBlockStocksDao()
+    result = [result[0], result[-1]]
+    dao = StockHangQingkDao()
     dao.deleteByDate(date)
     dao.insert(date, result)

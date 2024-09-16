@@ -38,6 +38,7 @@ class TopBlockCrawler(CrawlerBase):
         self.url = f"http://data.10jqka.com.cn/dataapi/limit_up/block_top?filter=HS,GEM2STAR&date={datestr}"
 
     def crawl(self) -> List[TopBlocksInfo]:
+        log.info(f"爬取最强板块, URL: {self.url}")
         response = requests.get(self.url)
 
         if response.status_code == 200:

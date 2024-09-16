@@ -29,6 +29,7 @@ log = getLogger()
 
 NullableInt = Annotated[int, BeforeValidator(lambda v: 0 if v is None else v)]
 NullableFloat = Annotated[float, BeforeValidator(lambda v: 0.0 if v is None else v)]
+NullableString = Annotated[str, BeforeValidator(lambda v: "" if v is None else v)]
 
 """
 每日涨跌停汇总.
@@ -85,7 +86,7 @@ class LimitUpStockModel(BaseModel):
     order_amount: float = Field(..., description="封单金额")
     limit_up_suc_rate: NullableFloat = Field(..., description="封板成功率")
     reason_type: Optional[str] = Field(..., description="涨停原因")
-    high_days: str = Field(..., description="几天几板")
+    high_days: NullableString = Field(..., description="几天几板")
 
 class LimitUpRespDataModel(BaseModel):
     page: PageInfo
@@ -97,14 +98,14 @@ class LimitUpRespDataModel(BaseModel):
 class StockConceptInfo(BaseModel):
     code: str = Field(..., description="股票代码")
     name: str = Field(..., description="股票名称")
-    concept: str = Field(..., description="概念板块")
-    reason_type: str = Field(..., description="涨停原因分类, 用加号分隔")
-    reason_info: str = Field(..., description="详细涨停原因")
+    concept: NullableString = Field(..., description="概念板块")
+    reason_type: NullableString = Field(..., description="涨停原因分类, 用加号分隔")
+    reason_info: NullableString = Field(..., description="详细涨停原因")
 
 class TopBlocksInfo(BaseModel):
     code: str = Field(..., description="板块代码")
     name: str = Field(..., description="板块名称")
-    change: float = Field(..., description="板块涨幅")
+    change: NullableFloat = Field(..., description="板块涨幅")
     limit_up_num: int = Field(..., description="板块涨停数量")
     continuous_plate_num: int = Field(..., description="持续上榜天数")
     high: str = Field(..., description="最高几天几板")

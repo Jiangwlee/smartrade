@@ -48,38 +48,69 @@ def offsetInMinutes(cur_time: datetime, start_time: str = "09:25") -> int:
 """
 获取过去的 N 个交易日.
 """
-def getLastNTradeDate(num: int) -> List[str]:
-    url = f"https://gateway.jrj.com/quot-kline?format=json&securityId=1000001&type=day&direction=left&range.num={num}"
+def getLastNTradeDate(num: int, begin: str = today()) -> List[str]:
+    url = f"https://gateway.jrj.com/quot-kline?format=json&securityId=1000001&type=day&direction=left&range.num={num}&range.begin={begin}"
+    log.info(f"查询最近的交易日, URL: {url}")
     result = []
     response = requests.get(url)
     if response.status_code == 200:
         content = response.json()
         log.info("查询交易日信息成功!")
         data = [StockHangQingInfo(code="000001", **item) for item in content["data"]["kline"]]
-        result = [d.index for d in data]
+        result = [f"{d.index}" for d in data]
         return result
     else:
         log.error(f"请求失败，状态码: {response.status_code}")
 
+"""
+获取交易日验证器材.
+
+@param start: 起始日期
+@param end: 结束日期
+"""
+def getTradeDayValidator(start: str, end: str):
+    # 将日期字符串转换为datetime对象
+    date1_obj = datetime.strptime(start, "%Y%m%d")
+    date2_obj = datetime.strptime(end, "%Y%m%d")
+    # 计算两个日期之间的差异
+    date_diff = date2_obj - date1_obj
+    # 从timedelta对象中获取天数
+    days_diff = date_diff.days
+    trade_date_list = getLastNTradeDate(days_diff + 1, end)
+    log.info(f"交易日列表: {trade_date_list}")
+    log.info(f"一共 {len(trade_date_list)} 个交易日")
+    return lambda x: x in trade_date_list
 
 """
 A date iterator between start and end.
+
+@param start: 起始日期 (包含)
+@param end: 结束日期 (不包含)
+@param format: 日期格式, 默认 %Y%m%d
+@param validator: 日期校验器. 若是设置了, 则每次获取到下一个日期后都进行校验, 校验失败继续取下一个.
 """
 class DateIterator:
-    def __init__(self, start: str, end: str, format: str = "%Y%m%d") -> None:
+    def __init__(self, start: str, end: str, format: str = "%Y%m%d", validator=lambda x: True) -> None:
         self.format = format
         self.start = datetime.strptime(start, format)
         self.end = datetime.strptime(end, format)
-        self.date = self.start
+        self.date = self.start - timedelta(days=1)
+        self.validator = validator
 
     def next(self):
-        if self.hasNext():
+        # 移动到下一个值
+        while self.hasNext():
             self.date = self.date + timedelta(days=1)
+            if self.validator(self.date.strftime(self.format)):
+                break
         return self.date.strftime(self.format)
     
     def prev(self):
-        if self.hasPrev():
+        # 移动到下一个值
+        while self.hasPrev():
             self.date = self.date - timedelta(days=1)
+            if self.validator(self.date.strftime(self.format)):
+                break
         return self.date.strftime(self.format)
     
     def hasNext(self):
