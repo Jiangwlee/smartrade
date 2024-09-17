@@ -8,7 +8,7 @@ from typing import List
 from crawlers.db.connector import getConnection
 from crawlers.db.dao import LimitDownkDao, LimitUpDao
 from crawlers.utils.logger import get_logger
-from crawlers.utils.dateutil import today, previous_date, next_date, offset_in_minutes, trade_day_validator, DateIterator
+from crawlers.utils.dateutil import today, previous_date, next_date, offset_in_minutes, trade_day_validator, get_last_N_trade_date, DateIterator
 from crawlers.utils.dbutil import rows_to_models
 from crawlers.ths.blocktop import TopBlockCrawler
 from crawlers.ths.limitupladder import LimitUpLadderCrawler
@@ -120,10 +120,12 @@ class DatasetGenerator():
 
     @param start: start date in format "%Y%m%d". Example: 20240101
     @param end: end date in format "%Y%m%d". Example: 20240101
+    @param is_for_train: True - Generate dataset for train. False - Generate dataset for prediction.
     """
-    def __init__(self, start: str, end: str) -> None:
+    def __init__(self, start: str, end: str, is_for_train: bool = True) -> None:
         self.start = start
         self.end = end
+        self.is_for_train = is_for_train
         self.dataset = []
 
     def saveToCsv(self, data: List[BaseModel], filepath):
@@ -141,32 +143,37 @@ class DatasetGenerator():
         # output = [DatasetOutModel(**d.dict()) for d in self.dataset]
         # self.saveToCsv(output, filepath)
         # 保存原始数据，方便验证
-        self.saveToCsv(self.dataset, f"{filepath}-raw.csv")
+        self.saveToCsv(self.dataset, f"{filepath}")
     
     def generate(self):
         self.dataset = []
-        date_iter = DateIterator(self.start, self.end, validator=trade_day_validator(self.start, self.end))
+        # 如果 start 为 20240913, 那么涨停日是之前的一个交易日
+        limit_up_start = get_last_N_trade_date(1, previous_date(self.start))[0]
+        limit_up_end = get_last_N_trade_date(1, previous_date(self.end))[0]
+        limit_up_date_iter = DateIterator(limit_up_start, limit_up_end, validator=trade_day_validator(limit_up_start, limit_up_end))
         next_date_iter = DateIterator(self.start, self.end, validator=trade_day_validator(self.start, self.end))
-        next_date_iter.next()
 
-        while date_iter.has_next():
+        while limit_up_date_iter.has_next():
             log.info("-" * 50)
             # 涨停日期
-            limit_up_day = date_iter.next()
+            limit_up_day = limit_up_date_iter.next()
             next_day = next_date_iter.next()
-            log.info(f"[{limit_up_day}] 生成涨停股票数据集, 下一个交易日: {next_day}")
+            log.info(f"生成涨停股票数据集, 涨停日: {limit_up_day}, 交易日: {next_day}")
             # 涨停之后的一天，根据第二天的表现来打标签
             # 获取涨停日的信息
             dao = DatasetDao()
             limit_up_info = rows_to_models(dao.selectByDate(limit_up_day), ResultModel)
 
-            # 获取第二天的信息
-            dao = LimitUpDao()
-            limit_up_list = dao.getItemsByDate(next_day)
-            limit_up_code_list = [s[4] for s in limit_up_list]
-            dao = LimitDownkDao()
-            limit_down_list = dao.getItemsByDate(next_day)
-            limit_down_code_list = [s[4] for s in limit_down_list]
+            # 获取交易日的信息
+            limit_up_code_list = []
+            limit_down_code_list = []
+            if self.is_for_train:
+                dao = LimitUpDao()
+                limit_up_list = dao.getItemsByDate(next_day)
+                limit_up_code_list = [s[4] for s in limit_up_list]
+                dao = LimitDownkDao()
+                limit_down_list = dao.getItemsByDate(next_day)
+                limit_down_code_list = [s[4] for s in limit_down_list]
             # 处理各个涨停的股票
             for r in limit_up_info:
                 code = r.code
@@ -178,17 +185,23 @@ class DatasetGenerator():
                 open_change = (open.close_price - open.pre_close_price) / open.pre_close_price
                 # 竞价强度: 开盘成交量 / 昨日封单量
                 open_strength = open.volume / r.order_volume
-                # 当日最终收盘涨幅
-                close = hangqing[-1]
-                close_change = (close.close_price - open.pre_close_price) / open.pre_close_price
-                # 最终标签
-                label = 3 if close_change > 0 else 4
-                # 查询涨停板和跌停板
-                if code in limit_up_code_list:
-                    label = 1
+
+                if self.is_for_train:
+                    # 当日最终收盘涨幅
+                    close = hangqing[-1]
+                    close_change = (close.close_price - open.pre_close_price) / open.pre_close_price
+                    # 最终标签
+                    label = 3 if close_change > 0 else 4
+                    # 查询涨停板和跌停板
+                    if code in limit_up_code_list:
+                        label = 1
+                    else:
+                        if code in limit_down_code_list:
+                            label = 2
                 else:
-                    if code in limit_down_code_list:
-                        label = 2
+                    # Useless, just give it a default value.
+                    label = 1
+                    close_change = 0
 
                 self.dataset.append(
                     DatasetModel(

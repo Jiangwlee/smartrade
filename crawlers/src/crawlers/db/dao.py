@@ -223,5 +223,5 @@ if __name__ == '__main__':
     result = spider.crawl()
     result = [result[0], result[-1]]
     dao = StockHangQingkDao()
-    dao.deleteByDate(date)
-    dao.insert(date, result)
+    # dao.deleteByDate(date)
+    # dao.insert(date, result)

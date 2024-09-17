@@ -70,6 +70,9 @@ class LimitDownRespDataModel(BaseModel):
     limit_down_count: StockDayOverDaySummary
     date: str
 
+    def __len__(self):
+        return len(self.info)
+
 
 class LimitUpStockModel(BaseModel):
     code: str = Field(..., description="股票代码")
@@ -95,6 +98,9 @@ class LimitUpRespDataModel(BaseModel):
     limit_down_count: StockDayOverDaySummary
     date: str
 
+    def __len__(self):
+        return len(self.info)
+
 class StockConceptInfo(BaseModel):
     code: str = Field(..., description="股票代码")
     name: str = Field(..., description="股票名称")
@@ -112,6 +118,9 @@ class TopBlocksInfo(BaseModel):
     days: int = Field(..., description="天数")
     stock_list: List[StockConceptInfo]
 
+    def __len__(self):
+        return len(self.stock_list)
+
 class StockContinuousInfo(BaseModel):
     code: str = Field(..., description="股票代码")
     name: str = Field(..., description="股票名称")
@@ -121,3 +130,6 @@ class StockContinuousInfo(BaseModel):
 class LimitUpLadderInfo(BaseModel):
     height: int = Field(..., description="连板天数")
     code_list: List[StockContinuousInfo]
+
+    def __len__(self):
+        return len(self.code_list)

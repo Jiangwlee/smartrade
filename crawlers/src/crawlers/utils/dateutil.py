@@ -45,6 +45,28 @@ def offset_in_minutes(cur_time: datetime, start_time: str = "09:25") -> int:
     # 将时间差转换为分钟
     return time_diff.total_seconds() / 60
 
+def compare_date(date1: str, date2: str):
+    """
+    比较两个日期.
+    --
+    @param data1: 第一个日期, 格式: %Y%m%d
+    @param data2: 第二个日期, 格式: %Y%m%d
+
+    Returns:
+        如果 date1 < date2, 返回 -1.
+        如果 date1 == date2, 返回 0.
+        如果 date1 > date2, 返回 1.
+    """
+    date_format = "%Y%m%d"
+    date1 = datetime.strptime(date1, date_format)
+    date2 = datetime.strptime(date2, date_format)
+    if date1 < date2:
+        return -1
+    elif date1 > date2:
+        return 1
+    else:
+        return 0
+
 """
 获取过去的 N 个交易日.
 """

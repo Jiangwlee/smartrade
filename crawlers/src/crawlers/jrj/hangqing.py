@@ -29,7 +29,7 @@ def getHangqingOfDate(code: str, name: str, date_str: str) -> List[StockHangQing
         spider = HangQingCrawler(code, name, date_str, HangQingType.ONE_M, 1)
         result = spider.crawl()
         result = [result[0], result[-1]]
-        dao.insert(date_str, [result[0], result[-1]])
+        # dao.insert(date_str, [result[0], result[-1]])
     else:
         result = rows_to_models(result, StockHangQingInfo)
     return result
