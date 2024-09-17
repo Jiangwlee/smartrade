@@ -393,7 +393,8 @@ class Predictor:
                 predicted_labels = predicted_indices.cpu().numpy()
                 for i, label in enumerate(predicted_labels):
                     global_index = batch_idx * 64 + i
-                    prob = probabilities[i][0] if label == 0 else probabilities[i][1]
+                    prob = probabilities[i][0].item() if label == 0 else probabilities[i][1].item()
+                    prob = round(prob * 100, 2)
                     self.result.append(
                         {
                             "code": f"{csv_reader.descriptions[global_index][0]:06}",
@@ -401,12 +402,13 @@ class Predictor:
                             "date": f"{csv_reader.descriptions[global_index][2]}",
                             "pred": self.label_text[label],
                             "pred_label": label,
-                            "pred_prob": f"{prob * 100}%"
+                            "pred_prob": f"{prob}%"
                         }
                     )
                     
-                    print(f'输入数据 [{global_index:04}] 的预测结果: {self.label_text[label]}, 预测概率: {prob * 100}%')
+                    print(f'输入数据 [{global_index:04}] 的预测结果: {self.label_text[label]}, 预测概率: {prob}%')
                 batch_idx += 1
+            self.result = sorted(self.result, key=lambda x: x['pred_label'])
 
     def save(self):
         with open(self.result_path, 'w', newline="", encoding="UTF-8") as csvfile:
