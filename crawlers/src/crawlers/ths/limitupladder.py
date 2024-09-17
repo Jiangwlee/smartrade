@@ -23,12 +23,12 @@ Version:
 
 import requests
 from typing import List
-from crawlers.utils.logger import getLogger
+from crawlers.utils.logger import get_logger
 from crawlers.utils.dateutil import today
 from crawlers.ths.dto import LimitUpLadderInfo
 from crawlers.crawler import CrawlerBase
 
-log = getLogger()
+log = get_logger()
 
 class LimitUpLadderCrawler(CrawlerBase):
     def __init__(self, datestr: str = today()) -> None:

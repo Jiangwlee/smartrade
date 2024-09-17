@@ -2,21 +2,21 @@ import time
 import requests
 from typing import List
 from datetime import date, datetime, timedelta
-from crawlers.utils.logger import getLogger
+from crawlers.utils.logger import get_logger
 from crawlers.jrj.dto import StockHangQingInfo
 
-log = getLogger()
+log = get_logger()
 
 def today():
     return date.today().strftime("%Y%m%d")
         
-def timestampInMilliseconds():
+def timestamp_in_milliseconds():
     return int(time.time() * 1000)
 
-def timestampToDatetime(timestamp: str) -> datetime:
+def timestamp_to_datetime(timestamp: str) -> datetime:
     return datetime.fromtimestamp(int(timestamp))
 
-def previousDate(date_str: str):
+def previous_date(date_str: str):
     date_format = "%Y%m%d"
     # 将字符串转换为日期对象
     target_date = datetime.strptime(date_str, date_format)
@@ -25,7 +25,7 @@ def previousDate(date_str: str):
     # 格式化前一天的日期
     return previous_day.strftime(date_format)
 
-def nextDate(date_str: str):
+def next_date(date_str: str):
     date_format = "%Y%m%d"
     # 将字符串转换为日期对象
     target_date = datetime.strptime(date_str, date_format)
@@ -34,7 +34,7 @@ def nextDate(date_str: str):
     # 格式化一天的日期
     return next_day.strftime(date_format)
 
-def offsetInMinutes(cur_time: datetime, start_time: str = "09:25") -> int:
+def offset_in_minutes(cur_time: datetime, start_time: str = "09:25") -> int:
     formatted_time = cur_time.strftime("%H:%M")
     cur_date = datetime.today().strftime("%Y-%m-%d")
     # 将时分字符串与日期结合，并转换为datetime对象
@@ -48,7 +48,7 @@ def offsetInMinutes(cur_time: datetime, start_time: str = "09:25") -> int:
 """
 获取过去的 N 个交易日.
 """
-def getLastNTradeDate(num: int, begin: str = today()) -> List[str]:
+def get_last_N_tradeDate(num: int, begin: str = today()) -> List[str]:
     url = f"https://gateway.jrj.com/quot-kline?format=json&securityId=1000001&type=day&direction=left&range.num={num}&range.begin={begin}"
     log.info(f"查询最近的交易日, URL: {url}")
     result = []
@@ -68,7 +68,7 @@ def getLastNTradeDate(num: int, begin: str = today()) -> List[str]:
 @param start: 起始日期
 @param end: 结束日期
 """
-def getTradeDayValidator(start: str, end: str):
+def trade_day_validator(start: str, end: str):
     # 将日期字符串转换为datetime对象
     date1_obj = datetime.strptime(start, "%Y%m%d")
     date2_obj = datetime.strptime(end, "%Y%m%d")
@@ -76,7 +76,7 @@ def getTradeDayValidator(start: str, end: str):
     date_diff = date2_obj - date1_obj
     # 从timedelta对象中获取天数
     days_diff = date_diff.days
-    trade_date_list = getLastNTradeDate(days_diff + 1, end)
+    trade_date_list = get_last_N_tradeDate(days_diff + 1, end)
     log.info(f"交易日列表: {trade_date_list}")
     log.info(f"一共 {len(trade_date_list)} 个交易日")
     return lambda x: x in trade_date_list
@@ -99,7 +99,7 @@ class DateIterator:
 
     def next(self):
         # 移动到下一个值
-        while self.hasNext():
+        while self.has_next():
             self.date = self.date + timedelta(days=1)
             if self.validator(self.date.strftime(self.format)):
                 break
@@ -107,18 +107,18 @@ class DateIterator:
     
     def prev(self):
         # 移动到下一个值
-        while self.hasPrev():
+        while self.has_prev():
             self.date = self.date - timedelta(days=1)
             if self.validator(self.date.strftime(self.format)):
                 break
         return self.date.strftime(self.format)
     
-    def hasNext(self):
+    def has_next(self):
         return self.date < self.end;
 
-    def hasPrev(self):
+    def has_prev(self):
         return self.date > self.start;
 
 if __name__ == '__main__':
     for t in [1726191000, 1722821460, 1722821520, 1726124340]:
-        print(timestampToDatetime(t))
+        print(timestamp_to_datetime(t))

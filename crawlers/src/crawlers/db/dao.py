@@ -5,12 +5,12 @@
 from abc import ABC, abstractmethod
 from typing import List
 from crawlers.db.connector import getConnection
-from crawlers.utils.dateutil import timestampToDatetime
-from crawlers.utils.logger import getLogger
+from crawlers.utils.dateutil import timestamp_to_datetime
+from crawlers.utils.logger import get_logger
 from crawlers.ths.dto import LimitDownRespDataModel, LimitUpRespDataModel, LimitUpLadderInfo, TopBlocksInfo
 from crawlers.jrj.dto import StockHangQingInfo
 
-log = getLogger()
+log = get_logger()
 
 class BaseDao(ABC):
     def __init__(self, table: str):
@@ -57,8 +57,8 @@ class LimitDownkDao(BaseDao):
     def insert(self, date: str, crawl_result: LimitDownRespDataModel):
         log.info(f"Inserting data into table {self._table}")
         try:
-            data = [(date, s.code, s.name, s.change_rate, timestampToDatetime(s.first_limit_down_time), 
-                     timestampToDatetime(s.last_limit_down_time), s.turnover_rate, s.currency_value) for s in crawl_result.info]
+            data = [(date, s.code, s.name, s.change_rate, timestamp_to_datetime(s.first_limit_down_time), 
+                     timestamp_to_datetime(s.last_limit_down_time), s.turnover_rate, s.currency_value) for s in crawl_result.info]
             with getConnection() as connection:
                 with connection.cursor() as cursor:
                     cursor.executemany(self._insert_query, data)
@@ -82,8 +82,8 @@ class LimitUpDao(BaseDao):
                      s.code, 
                      s.name, 
                      s.change_rate, 
-                     timestampToDatetime(s.first_limit_up_time), 
-                     timestampToDatetime(s.last_limit_up_time), 
+                     timestamp_to_datetime(s.first_limit_up_time), 
+                     timestamp_to_datetime(s.last_limit_up_time), 
                      s.turnover_rate, 
                      s.market_type,
                      s.currency_value,
@@ -197,7 +197,7 @@ class StockHangQingkDao(BaseDao):
     def insert(self, date:str, hangqing_list: List[StockHangQingInfo]):
         log.info(f"Inserting data into table {self._table}")
         try:
-            data = [(timestampToDatetime(s.time), date, s.code, s.name, s.amount, s.volume, s.avg_price, s.high_price, s.low_price, s.open_price, s.close_price, s.pre_close_price) for s in hangqing_list]
+            data = [(timestamp_to_datetime(s.time), date, s.code, s.name, s.amount, s.volume, s.avg_price, s.high_price, s.low_price, s.open_price, s.close_price, s.pre_close_price) for s in hangqing_list]
             with getConnection() as connection:
                 with connection.cursor() as cursor:
                     cursor.executemany(self._insert_query, data)

@@ -22,12 +22,12 @@ Version:
 """
 
 import requests
-from crawlers.utils.logger import getLogger
-from crawlers.utils.dateutil import today, timestampInMilliseconds
+from crawlers.utils.logger import get_logger
+from crawlers.utils.dateutil import today, timestamp_in_milliseconds
 from crawlers.ths.dto import LimitDownRespDataModel
 from crawlers.crawler import CrawlerBase
 
-log = getLogger()
+log = get_logger()
 
 class LimitDownCrawler(CrawlerBase):
     def __init__(self, date=today()):
@@ -38,8 +38,8 @@ class LimitDownCrawler(CrawlerBase):
     def getUrl(self, page, timestamp):
         return self.base_url + self.url_formatter.format(page=page, today=self.date, timestamp_milliseconds=timestamp)
 
-    def crawlPage(self, page: int, result: list) -> LimitDownRespDataModel:
-        url = self.getUrl(page, timestampInMilliseconds())
+    def crawl_page(self, page: int, result: list) -> LimitDownRespDataModel:
+        url = self.getUrl(page, timestamp_in_milliseconds())
         
         log.info(f"爬取跌停板数据, URL: {url}")
         response = requests.get(url)
@@ -54,7 +54,7 @@ class LimitDownCrawler(CrawlerBase):
 
             if page_info.page < page_info.count:
                 log.info(f"一共 {page_info.count} 页，当前第 {page} 页")
-                self.crawlPage(page + 1, result)
+                self.crawl_page(page + 1, result)
             else:
                 log.info(f"一共 {page_info.total} 条跌停数据, 已经爬取 {len(result)} 条跌停数据")
             return data
@@ -63,7 +63,7 @@ class LimitDownCrawler(CrawlerBase):
 
     def crawl(self) -> LimitDownRespDataModel:
         result_info = []
-        total = self.crawlPage(1, result_info)
+        total = self.crawl_page(1, result_info)
         total.info = result_info
         return total
 

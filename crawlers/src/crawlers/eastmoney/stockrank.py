@@ -6,9 +6,9 @@ import requests
 from typing import List
 from dto import StockRankInfo
 from crawlers.crawler import CrawlerBase
-from crawlers.utils.logger import getLogger
+from crawlers.utils.logger import get_logger
 
-log = getLogger()
+log = get_logger()
 
 class StockRankCrawler(CrawlerBase):
     def __init__(self) -> None:

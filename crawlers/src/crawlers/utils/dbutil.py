@@ -1,7 +1,7 @@
 from typing import List
 from pydantic import BaseModel
 
-def rowsToModels(rows: List[tuple], model: BaseModel) -> List[BaseModel]:
+def rows_to_models(rows: List[tuple], model: BaseModel) -> List[BaseModel]:
     """
     将数据库返回的 Tuple 结果转换成 BaseModel.
     --

@@ -2,7 +2,7 @@ import os
 import logging
 from crawlers.config import CONSOLE_HANDLER, FILE_HANDLER
 
-def getLogger(module: str = ""):
+def get_logger(module: str = ""):
     logger = logging.getLogger('smartcrawler')
     logger.addHandler(CONSOLE_HANDLER)
     if os.name == 'posix':

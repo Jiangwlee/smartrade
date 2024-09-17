@@ -7,11 +7,11 @@ from enum import Enum
 from typing import List
 from crawlers.jrj.dto import StockHangQingInfo
 from crawlers.crawler import CrawlerBase
-from crawlers.utils.logger import getLogger
-from crawlers.utils.dbutil import rowsToModels
+from crawlers.utils.logger import get_logger
+from crawlers.utils.dbutil import rows_to_models
 from crawlers.db.dao import StockHangQingkDao
 
-log = getLogger()
+log = get_logger()
 
 """
 获取某一天的行情, 一分钟一条记录, 一共 241 条记录. 第一条记录是集合竞价记录, 最后一条记录是尾盘集合竞价.
@@ -31,7 +31,7 @@ def getHangqingOfDate(code: str, name: str, date_str: str) -> List[StockHangQing
         result = [result[0], result[-1]]
         dao.insert(date_str, [result[0], result[-1]])
     else:
-        result = rowsToModels(result, StockHangQingInfo)
+        result = rows_to_models(result, StockHangQingInfo)
     return result
 
 class HangQingType(Enum):

@@ -2,8 +2,8 @@
 行情下载器.
 """
 
-from crawlers.utils.logger import getLogger
-from crawlers.utils.dateutil import today, getTradeDayValidator, DateIterator
+from crawlers.utils.logger import get_logger
+from crawlers.utils.dateutil import today, trade_day_validator, DateIterator
 from crawlers.ths.limitup import LimitUpCrawler
 from crawlers.ths.limitdown import LimitDownCrawler
 from crawlers.ths.limitupladder import LimitUpLadderCrawler
@@ -11,7 +11,7 @@ from crawlers.ths.blocktop import TopBlockCrawler
 from crawlers.jrj.hangqing import HangQingCrawler, HangQingType
 from crawlers.db.dao import LimitUpDao, LimitDownkDao, LimitUpLadderDao, TopBlockDao, TopBlockStocksDao, StockHangQingkDao
 
-log = getLogger()
+log = get_logger()
 
 class Downloader:
     def __init__(self, start, end=today()) -> None:
@@ -19,11 +19,11 @@ class Downloader:
         self.end_data = end
 
     def run(self):
-        validator = getTradeDayValidator(self.start_date, self.end_data)
+        validator = trade_day_validator(self.start_date, self.end_data)
         date_iter = DateIterator(self.start_date, self.end_data, validator=validator)
         next_date_iter = DateIterator(self.start_date, self.end_data, validator=validator)
         next_date_iter.next() # Move next_date_iter forward
-        while date_iter.hasNext():
+        while date_iter.has_next():
             cur_date = date_iter.next()
             next_date = next_date_iter.next()
             spider_dao_list = [

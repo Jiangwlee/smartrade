@@ -1,7 +1,9 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional
 
 class StockHangQingInfo(BaseModel):
+    model_config = ConfigDict(populate_by_name=True) #允许使用字段原名初始化
+
     code: Optional[str] = Field("", description="股票代码")
     name: Optional[str] = Field("", description="股票名称")
     time: int = Field(..., description="日期", alias="nTime")
@@ -14,6 +16,3 @@ class StockHangQingInfo(BaseModel):
     open_price: int = Field(..., description="开盘价", alias="nOpenPx")
     close_price: int = Field(..., description="收盘价", alias="nLastPx")
     pre_close_price: int = Field(..., description="昨日收盘价", alias="nPreClosePx")
-
-    class Config:
-        populate_by_name = True  # 允许使用字段原名初始化

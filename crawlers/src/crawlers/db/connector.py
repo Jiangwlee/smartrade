@@ -2,9 +2,9 @@ import mysql.connector
 from mysql.connector.pooling import PooledMySQLConnection 
 from crawlers.config import DB_CONFIG
 
-from crawlers.utils.logger import getLogger
+from crawlers.utils.logger import get_logger
 
-log = getLogger()
+log = get_logger()
 
 # 连接到 MySQL 数据库
 connection_pool = mysql.connector.pooling.MySQLConnectionPool(

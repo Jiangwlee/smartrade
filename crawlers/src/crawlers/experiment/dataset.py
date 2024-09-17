@@ -7,14 +7,14 @@ from pydantic import BaseModel, Field
 from typing import List
 from crawlers.db.connector import getConnection
 from crawlers.db.dao import LimitDownkDao, LimitUpDao
-from crawlers.utils.logger import getLogger
-from crawlers.utils.dateutil import today, previousDate, nextDate, offsetInMinutes, getTradeDayValidator, DateIterator
-from crawlers.utils.dbutil import rowsToModels
+from crawlers.utils.logger import get_logger
+from crawlers.utils.dateutil import today, previous_date, next_date, offset_in_minutes, trade_day_validator, DateIterator
+from crawlers.utils.dbutil import rows_to_models
 from crawlers.ths.blocktop import TopBlockCrawler
 from crawlers.ths.limitupladder import LimitUpLadderCrawler
 from crawlers.jrj.hangqing import getHangqingOfDate
 
-log = getLogger()
+log = get_logger()
 
 """
 主要包含以下属性:
@@ -145,11 +145,11 @@ class DatasetGenerator():
     
     def generate(self):
         self.dataset = []
-        date_iter = DateIterator(self.start, self.end, validator=getTradeDayValidator(self.start, self.end))
-        next_date_iter = DateIterator(self.start, self.end, validator=getTradeDayValidator(self.start, self.end))
+        date_iter = DateIterator(self.start, self.end, validator=trade_day_validator(self.start, self.end))
+        next_date_iter = DateIterator(self.start, self.end, validator=trade_day_validator(self.start, self.end))
         next_date_iter.next()
 
-        while date_iter.hasNext():
+        while date_iter.has_next():
             log.info("-" * 50)
             # 涨停日期
             limit_up_day = date_iter.next()
@@ -158,7 +158,7 @@ class DatasetGenerator():
             # 涨停之后的一天，根据第二天的表现来打标签
             # 获取涨停日的信息
             dao = DatasetDao()
-            limit_up_info = rowsToModels(dao.selectByDate(limit_up_day), ResultModel)
+            limit_up_info = rows_to_models(dao.selectByDate(limit_up_day), ResultModel)
 
             # 获取第二天的信息
             dao = LimitUpDao()
@@ -199,8 +199,8 @@ class DatasetGenerator():
                         currency_value=r.currency_value / 100000000,
                         feng_liu_rate=r.order_amount / r.currency_value,
                         limit_up_open=r.limit_up_open,
-                        first_limit_up_time=offsetInMinutes(r.first_limit_up_time),
-                        last_limit_up_time=offsetInMinutes(r.last_limit_up_time),
+                        first_limit_up_time=offset_in_minutes(r.first_limit_up_time),
+                        last_limit_up_time=offset_in_minutes(r.last_limit_up_time),
                         turnover_rate=r.turnover_rate,
                         open_strength=open_strength,
                         open_change=open_change,

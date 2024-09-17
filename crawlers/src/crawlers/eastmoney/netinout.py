@@ -7,11 +7,11 @@ import json
 from typing import List
 from dto import StockNetAmountInfo
 from crawlers.crawler import CrawlerBase
-from crawlers.utils.logger import getLogger
-from crawlers.utils.dateutil import timestampInMilliseconds
-from crawlers.utils.stringutil import generateRandomNumericString
+from crawlers.utils.logger import get_logger
+from crawlers.utils.dateutil import timestamp_in_milliseconds
+from crawlers.utils.stringutil import generate_random_numeric_string
 
-log = getLogger()
+log = get_logger()
 
 params = (
     "&fid=f62&pz=50&pn=1&np=1&fltt=2&invt=2&ut=b2884a393a59ad64002292a3e90d46a5"
@@ -22,7 +22,7 @@ params = (
 
 class NetInOutCrawler(CrawlerBase):
     def __init__(self, isNetIn=True) -> None:
-       self.query_id = f"jQuery{generateRandomNumericString()}_{timestampInMilliseconds()}"
+       self.query_id = f"jQuery{generate_random_numeric_string()}_{timestamp_in_milliseconds()}"
        self.isNetIn = isNetIn
        self.url = f"https://push2.eastmoney.com/api/qt/clist/get?cb={self.query_id}" + f"&po={1 if isNetIn else 0}" + params
 

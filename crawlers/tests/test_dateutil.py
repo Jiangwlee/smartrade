@@ -1,8 +1,8 @@
 from datetime import datetime
-from crawlers.utils.dateutil import previousDate, DateIterator, offsetInMinutes, getLastNTradeDate
+from crawlers.utils.dateutil import previous_date, DateIterator, offset_in_minutes, get_last_N_tradeDate
 
 def test_previousDate():
-    assert previousDate('20240913') == '20240912'
+    assert previous_date('20240913') == '20240912'
 
 def test_dateIterator():
     iter = DateIterator("20240831", "20240902")
@@ -22,11 +22,11 @@ def test_dateIterator_with_validator():
     assert iter.next() == '20240910'
 
 def test_offsetInMinutes():
-    assert offsetInMinutes(datetime.strptime("2024-01-01 09:30:00", "%Y-%m-%d %H:%M:%S")) == 5
-    assert offsetInMinutes(datetime.strptime("2024-01-01 09:31:00", "%Y-%m-%d %H:%M:%S")) == 6
-    assert offsetInMinutes(datetime.strptime("2024-01-01 09:32:30", "%Y-%m-%d %H:%M:%S")) == 7
+    assert offset_in_minutes(datetime.strptime("2024-01-01 09:30:00", "%Y-%m-%d %H:%M:%S")) == 5
+    assert offset_in_minutes(datetime.strptime("2024-01-01 09:31:00", "%Y-%m-%d %H:%M:%S")) == 6
+    assert offset_in_minutes(datetime.strptime("2024-01-01 09:32:30", "%Y-%m-%d %H:%M:%S")) == 7
 
 def test_getLastNTradeDate():
-    result = getLastNTradeDate(180)
+    result = get_last_N_tradeDate(180)
     assert len(result) == 180
     assert result[0] < result[-1]

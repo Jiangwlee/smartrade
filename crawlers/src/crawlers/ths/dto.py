@@ -23,9 +23,9 @@ Version:
 from typing_extensions import Annotated
 from pydantic import BaseModel, Field, BeforeValidator, AfterValidator
 from typing import List, Optional
-from crawlers.utils.logger import getLogger
+from crawlers.utils.logger import get_logger
 
-log = getLogger()
+log = get_logger()
 
 NullableInt = Annotated[int, BeforeValidator(lambda v: 0 if v is None else v)]
 NullableFloat = Annotated[float, BeforeValidator(lambda v: 0.0 if v is None else v)]

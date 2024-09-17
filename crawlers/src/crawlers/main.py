@@ -1,6 +1,6 @@
-from crawlers.utils.logger import getLogger
+from crawlers.utils.logger import get_logger
 
-logger = getLogger()
+logger = get_logger()
 
 def crawl():
     logger.info("Hello world, let's crawl")
