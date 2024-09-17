@@ -3,7 +3,7 @@
 """
 
 from crawlers.utils.logger import get_logger
-from crawlers.utils.dateutil import today, trade_day_validator, DateIterator
+from crawlers.utils.dateutil import today, trade_day_validator, get_last_N_trade_date, DateIterator
 from crawlers.ths.limitup import LimitUpCrawler
 from crawlers.ths.limitdown import LimitDownCrawler
 from crawlers.ths.limitupladder import LimitUpLadderCrawler
@@ -21,11 +21,11 @@ class Downloader:
     def run(self):
         validator = trade_day_validator(self.start_date, self.end_data)
         date_iter = DateIterator(self.start_date, self.end_data, validator=validator)
-        next_date_iter = DateIterator(self.start_date, self.end_data, validator=validator)
-        next_date_iter.next() # Move next_date_iter forward
+        cur_date = None
         while date_iter.has_next():
+            # 如果第一次进入循环, 将 prev_date 设置为上一个交易日, 否则设置成上一个 cur_date, 然后更新 cur_date
+            prev_date = cur_date if cur_date is not None else get_last_N_trade_date(1, self.start_date)
             cur_date = date_iter.next()
-            next_date = next_date_iter.next()
             spider_dao_list = [
                 (LimitUpCrawler(cur_date), [LimitUpDao()]),
                 (LimitDownCrawler(cur_date), [LimitDownkDao()]),
@@ -41,11 +41,11 @@ class Downloader:
                     dao.deleteByDate(cur_date)
                     dao.insert(cur_date, result)
                     log.info("-" * 20)
-            # Crawl data of next date
-            limit_up_code_list = [(x[4], x[5]) for x in LimitUpDao().getItemsByDate(cur_date)]
-            self.crawlHangQing(next_date, limit_up_code_list)
+            # 获取上一个交易日的涨停板列表, 并抓取今日的竞价行情
+            limit_up_code_list = [(x[4], x[5]) for x in LimitUpDao().getItemsByDate(prev_date)]
+            self.__crawl_hang_qing(cur_date, limit_up_code_list)
 
-    def crawlHangQing(self, date: str, code_list: list):
+    def __crawl_hang_qing(self, date: str, code_list: list):
         dao = StockHangQingkDao()
         dao.deleteByDate(date)
         for code, name in code_list:
