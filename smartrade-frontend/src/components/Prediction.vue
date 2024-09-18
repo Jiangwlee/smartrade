@@ -1,6 +1,6 @@
 <template>
   <div class="block">
-    <span class="demonstration">Picker with quick options</span>
+    <span class="demonstration">选择日期: </span>
     <el-date-picker
       v-model="pickedDate"
       type="date"
@@ -11,7 +11,7 @@
       size="small"
     />
 
-    <el-button type="primary" size="small" :onclick="fetchPredictions">Primary</el-button>
+    <el-button type="primary" size="small" :onclick="fetchPredictions">连板预测</el-button>
   </div>
 
   <el-table :data="tableData" style="width: 100%">
@@ -25,8 +25,9 @@
   
 <script lang="ts" setup>
   import { ref, reactive, onMounted } from 'vue';
-  import { getPrediction } from '../services/requests'
+  import { getPrediction } from '@/services/requests'
   import { type Prediction } from '@/services/types';
+  import 'dayjs/locale/zh-cn'
 
   const pickedDate = ref('')
   const tableData = reactive<Prediction[]>([])
@@ -44,11 +45,11 @@
 
   const shortcuts = [
     {
-      text: 'Today',
+      text: '今天',
       value: new Date(),
     },
     {
-      text: 'Yesterday',
+      text: '昨天',
       value: () => {
         const date = new Date()
         date.setTime(date.getTime() - 3600 * 1000 * 24)
@@ -56,7 +57,7 @@
       },
     },
     {
-      text: 'A week ago',
+      text: '一周前',
       value: () => {
         const date = new Date()
         date.setTime(date.getTime() - 3600 * 1000 * 24 * 7)

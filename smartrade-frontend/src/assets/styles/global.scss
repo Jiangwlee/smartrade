@@ -1,0 +1,59 @@
+@forward 'element-plus/theme-chalk/src/common/var.scss' with (
+  $colors: (
+    'primary': (
+      'base': red,
+    ),
+  ),
+);
+
+body {
+  font-family: Inter, system-ui, Avenir, 'Helvetica Neue', Helvetica,
+    'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑', Arial,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+}
+
+a {
+  color: var(--ep-color-primary);
+}
+
+code {
+  border-radius: 2px;
+  padding: 2px 4px;
+  background-color: var(--ep-color-primary-light-9);
+  color: var(--ep-color-primary);
+}
+
+.common-layout {
+  .el-header,
+  .el-footer,
+  .el-main,
+  .el-aside {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .el-header,
+  .el-footer {
+    background-color: #303133;
+    color: #ffffff;
+    text-align: center;
+  }
+
+  .el-aside {
+    background-color: var(--el-color-primary-light-8);
+    color: var(--el-text-color-primary);
+    text-align: center;
+  }
+
+  .el-main {
+    background-color: var(--el-color-primary-light-9);
+    color: var(--el-text-color-primary);
+    text-align: center;
+
+    //   height: 150px;
+  }
+}
