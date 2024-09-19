@@ -2,11 +2,13 @@ import os
 from fastapi import FastAPI
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from crawlers.services import make_dataset
+from crawlers.services.ai import make_dataset, download_hangqing
+from crawlers.services.limitup import get_limitup_details
+from crawlers.services.dto import LimitUpDetailsDto
 from aimodels.config import PRED_DATASET, PRED_RESULT, EVAL_DATASET, EVAL_RESULT
 from aimodels.utils.logger import get_logger
 from aimodels.models.stockmodel import Predictor, Evaluator
-from aimodels.dto.common import HttpResp
+from aimodels.dto.common import HttpResp, DatePair
 
 log = get_logger()
 
@@ -37,9 +39,11 @@ async def predict(date):
     evaluator = Predictor(dataset_file, result_file)
     evaluator.run()
     evaluator.save()
+    # 查询涨停和人气
+
     return HttpResp(
         code=200,
-        data=evaluator.http_response(),
+        data=evaluator.get_results(),
         msg="操作成功"
     )
 
@@ -53,4 +57,23 @@ async def evaluate(date):
     evaluator.run()
     evaluator.summarize()
     evaluator.save()
-    
+
+@app.get("/limitup/details/{date}", description="涨停详情")
+async def limit_up_details(date):
+    log.info(f"查询涨停详情 {date}")
+    results = get_limitup_details(date)
+    return HttpResp(
+        code=200,
+        data=results,
+        msg="操作成功"
+    )
+
+@app.post("/hangqing/", description="下载行情数据")
+async def download(date: DatePair):
+    log.info(f"下载行情 {date.start} - {date.end}")
+    download_hangqing(date.start, date.end)
+    return HttpResp(
+        code=200,
+        data={},
+        msg="操作成功"
+    )

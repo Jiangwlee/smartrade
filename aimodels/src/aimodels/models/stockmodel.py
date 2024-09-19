@@ -418,7 +418,7 @@ class Predictor:
             writer.writerows(dicts)
             print(f"保存预测结果至: {self.result_path}")
 
-    def http_response(self) -> List[PredResult]:
+    def get_results(self) -> List[PredResult]:
         return [PredResult(**x) for x in self.result]
         
 
