@@ -4,6 +4,7 @@ from typing import List
 from crawlers.services.dto import LimitUpDetailsDto, BlockSummayDto
 from crawlers.utils.logger import get_logger
 from crawlers.utils.dbutil import rows_to_models
+from crawlers.utils.dateutil import get_last_N_trade_date
 from crawlers.db.connector import getConnection
 
 log = get_logger()
@@ -19,6 +20,7 @@ def get_limitup_details(date: str) -> List[LimitUpDetailsDto]:
         LimitUpDetailsDto: 股票详情
     """
     log.info(f"正在查询股票详情")
+    trade_date = get_last_N_trade_date(1, date)[0]
     query = ("SELECT "
                 "s.`code` as code,"
                 "s.name as name, "
@@ -42,12 +44,12 @@ def get_limitup_details(date: str) -> List[LimitUpDetailsDto]:
         stock_list = []
         with getConnection() as connection:
             with connection.cursor() as cursor:
-                cursor.execute(query, (date,))
+                cursor.execute(query, (trade_date,))
                 result = cursor.fetchall()
                 print(result)
                 if result != None and len(result) > 0:
                     stock_list = rows_to_models(result, LimitUpDetailsDto)
-        block_list = get_block_summary(date)
+        block_list = get_block_summary(trade_date)
         block_map = {obj.code: obj for obj in block_list}
         for s in stock_list:
             for b in s.block_ids.split(','):
@@ -85,4 +87,4 @@ def get_block_summary(date) -> List[BlockSummayDto]:
         log.error(ex)
 
 if __name__ == '__main__':
-    print(get_limitup_details('20240918'))
+    print(get_limitup_details('20240917'))
