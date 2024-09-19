@@ -37,8 +37,9 @@ def make_dataset(start: str, end: str, filepath: str, is_for_train: bool):
     generator = DatasetGenerator(start, end, is_for_train)
     generator.generate()
     generator.save(filepath)
-    
+
 
 if __name__ == '__main__':
     # download_one_day('20240912')
-    make_dataset('20240913', '20240913', "C:\\Users\\admin\\Downloads\\dataset-240913.csv", False)
+    # make_dataset('20240913', '20240913', "C:\\Users\\admin\\Downloads\\dataset-240913.csv", False)
+    download_hangqing('20240918', '20240918')
