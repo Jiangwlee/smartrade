@@ -1,26 +1,43 @@
 <template>
-  <div class="block">
-    <span class="demonstration">选择日期: </span>
-    <el-date-picker
-      v-model="pickedDate"
-      type="date"
-      format="YYYY-MM-DD"
-      placeholder="Pick a day"
-      :disabled-date="disabledDate"
-      :shortcuts="shortcuts"
-      size="small"
-    />
+  <div class="prediction">
+    <el-row>
+      <el-col :span="4">
+        <el-space style="width: 100%">
+          <el-date-picker
+            v-model="pickedDate"
+            type="date"
+            format="YYYY-MM-DD"
+            placeholder="Pick a day"
+            :disabled-date="disabledDate"
+            :shortcuts="shortcuts"
+            size="small"
+          />
+          <el-button type="primary" size="small" :onclick="fetchPredictions">连板预测</el-button>
+        </el-space>
+      </el-col>
+    </el-row>
 
-    <el-button type="primary" size="small" :onclick="fetchPredictions">连板预测</el-button>
+    <el-row>
+      <el-col :span="12" justify="space-between">
+        <el-table :data="tableData" style="width: 100%" :row-class-name="tableRowClassName">
+          <el-table-column prop="date" label="日期" />
+          <el-table-column prop="code" label="股票代码">
+            <template #default="scope">
+              <div style="display: flex; align-items: center">
+                <a :href="getEastmoneyLink(scope.row.code)" target="_blank">{{ scope.row.code }}</a>
+              </div>
+          </template>
+          </el-table-column>
+          <el-table-column prop="name" label="股票名称" />
+          <el-table-column prop="pred" label="预测结果" />
+          <el-table-column prop="pred_prob" label="概率" />
+        </el-table>
+      </el-col>
+      <el-col :span="12">
+        详情
+      </el-col>
+    </el-row>
   </div>
-
-  <el-table :data="tableData" style="width: 100%">
-    <el-table-column prop="date" label="日期" />
-    <el-table-column prop="code" label="股票代码"/>
-    <el-table-column prop="name" label="股票名称" />
-    <el-table-column prop="pred" label="预测结果" />
-    <el-table-column prop="pred_prob" label="概率" />
-  </el-table>
 </template>
   
 <script lang="ts" setup>
@@ -41,6 +58,22 @@
 
   const disabledDate = (time: Date) => {
     return time.getTime() > Date.now()
+  }
+
+  const tableRowClassName = ({row, rowIndex}: {row: Prediction, rowIndex: number}) => {
+    if (row.pred == '连板') {
+      return 'success-row'
+    } else {
+      return ''
+    }
+  }
+
+  const getEastmoneyLink = (code: string) => {
+    if (code.startsWith('6')) {
+      return `https://quote.eastmoney.com/sh${code}.html`
+    } else {
+      return `https://quote.eastmoney.com/sz${code}.html`
+    }
   }
 
   const shortcuts = [
@@ -83,3 +116,30 @@
     // fetchPredictions();
   });
 </script>
+
+<style lang="scss" scoped>
+  .prediction {
+    width: 100%;
+
+    :deep(.success-row) {
+      --el-table-tr-bg-color: var(--el-color-danger-light-5);
+    }
+
+    .el-row {
+      margin-bottom: 20px;
+    }
+
+    .el-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .el-col {
+      border-radius: 4px;
+    }
+
+    .grid-content {
+      border-radius: 4px;
+      min-height: 36px;
+    }
+  }
+</style>
