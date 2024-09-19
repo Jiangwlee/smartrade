@@ -1,7 +1,7 @@
 """涨停个股服务.
 """
 from typing import List
-from crawlers.services.dto import LimitUpDetailsDto
+from crawlers.services.dto import LimitUpDetailsDto, BlockSummayDto
 from crawlers.utils.logger import get_logger
 from crawlers.utils.dbutil import rows_to_models
 from crawlers.db.connector import getConnection
@@ -39,13 +39,46 @@ def get_limitup_details(date: str) -> List[LimitUpDetailsDto]:
             "LEFT JOIN top_block_stocks tbs ON s.`date` = tbs.`date` AND s.code = tbs.code " 
             "WHERE s.`date` = %s;")
     try:
+        stock_list = []
         with getConnection() as connection:
             with connection.cursor() as cursor:
                 cursor.execute(query, (date,))
                 result = cursor.fetchall()
                 print(result)
                 if result != None and len(result) > 0:
-                    return rows_to_models(result, LimitUpDetailsDto)
+                    stock_list = rows_to_models(result, LimitUpDetailsDto)
+        block_list = get_block_summary(date)
+        block_map = {obj.code: obj for obj in block_list}
+        for s in stock_list:
+            for b in s.block_ids.split(','):
+                if b in block_map:
+                    s.blocks.append(block_map[b])
+        return stock_list
+    except Exception as ex:
+        log.error(ex)
+
+def get_block_summary(date) -> List[BlockSummayDto]:
+    """获取板块概要.
+
+    Parameters:
+        date: 日期, 格式: %YYYYMMDD, 比如: 20240101
+    
+    Returns:
+        BlockSummayDto: 板块概要信息.
+    """
+    log.info(f"正在查询板块概要")
+    query = (
+        "SELECT code, name, `date`, change_rate, limit_up_num, high, stock_list, ROW_NUMBER () OVER (ORDER BY limit_up_num DESC) AS rank_position "
+        "FROM top_block tb "
+        "WHERE `date` = %s;")
+    try:
+        with getConnection() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(query, (date,))
+                result = cursor.fetchall()
+                print(result)
+                if result != None and len(result) > 0:
+                    return rows_to_models(result, BlockSummayDto)
                 else:
                     return []
     except Exception as ex:

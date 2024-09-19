@@ -1,8 +1,21 @@
+from typing import List, Optional
 from typing_extensions import Annotated
 from pydantic import BaseModel, Field, BeforeValidator
 from datetime import datetime, date as date_type
 
 NULLABLE_STRING = Annotated[str, BeforeValidator(lambda v: "" if v is None else v)]
+
+class BlockSummayDto(BaseModel):
+    """板块概况
+    """
+    code: str = Field(..., description="板块代码")
+    name: str = Field(..., description="板块名称")
+    date: date_type = Field(..., description="日期")
+    change_rate: float = Field(..., description="板块涨幅")
+    limit_up_num: int = Field(..., description="板块涨停家数")
+    high: str = Field(..., description="板块最高高度")
+    stock_list: str = Field(..., description="股票列表")
+    rank_position: int = Field(..., description="板块排名")
 
 class LimitUpDetailsDto(BaseModel):
     code: str = Field(..., description="股票代码")
@@ -20,3 +33,4 @@ class LimitUpDetailsDto(BaseModel):
     reason_type: NULLABLE_STRING = Field(..., description="涨停原因")
     reason_info: NULLABLE_STRING = Field(..., description="涨停详情")
     block_ids: NULLABLE_STRING = Field(..., description="板块ID")
+    blocks: Optional[List[BlockSummayDto]] = Field([], description="板块概要")
