@@ -9,11 +9,13 @@ module.exports = {
       node: true,
       es6: true,
     },
+    plugins: ["@typescript-eslint"],
     extends: ['plugin:vue/recommended', 'eslint:recommended'],
   
     // add your custom rules here
     //it is base on https://github.com/vuejs/eslint-config-vue
     rules: {
+      "prettier/prettier": 2,
       "vue/max-attributes-per-line": [2, {
         "singleline": 10,
         "multiline": {

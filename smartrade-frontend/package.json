@@ -13,6 +13,7 @@
   "dependencies": {
     "axios": "^1.7.7",
     "element-plus": "^2.8.3",
+    "pinia": "^2.2.2",
     "sass": "^1.79.1",
     "scss": "^0.2.4",
     "vue": "^3.4.29",
@@ -21,8 +22,11 @@
   "devDependencies": {
     "@tsconfig/node20": "^20.1.4",
     "@types/node": "^20.14.5",
+    "@typescript-eslint/eslint-plugin": "^8.6.0",
+    "@typescript-eslint/parser": "^8.6.0",
     "@vitejs/plugin-vue": "^5.0.5",
     "@vue/tsconfig": "^0.5.1",
+    "eslint": "^9.11.0",
     "npm-run-all2": "^6.2.0",
     "sass-embedded": "^1.79.1",
     "typescript": "~5.4.0",
