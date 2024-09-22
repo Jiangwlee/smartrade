@@ -13,7 +13,9 @@
 
     <el-row :gutter="20">
       <el-col :span="12" justify="space-between">
-        <el-table :data="tableData" style="width: 100%" :row-class-name="tableRowClassName" @row-click="showDetail">
+        <el-table :data="tableData" style="width: 100%" v-loading="isLoading" element-loading-text="数据加载中..."
+          :element-loading-spinner="svg" element-loading-svg-view-box="-10, -10, 50, 50"
+          :row-class-name="tableRowClassName" @row-click="showDetail">
           <el-table-column prop="date" label="日期" />
           <el-table-column prop="code" label="股票代码">
             <template #default="scope">
@@ -23,6 +25,9 @@
             </template>
           </el-table-column>
           <el-table-column prop="name" label="股票名称" />
+          <el-table-column prop="limit_up_type" label="涨停类型" />
+          <el-table-column prop="high_days" label="涨停天数" />
+          <el-table-column prop="change_rate" label="竞价涨幅" />
           <el-table-column prop="pred" label="预测结果" />
           <el-table-column prop="pred_prob" label="概率" />
         </el-table>
@@ -42,18 +47,42 @@ import StockInfo from '@/components/StockInfo.vue'
 import type { Prediction, LimitUpDetail } from '@/services/types';
 import 'dayjs/locale/zh-cn'
 
-const pickedDate = ref('')
+interface TabelData {
+  date: string;
+  code: string;
+  name: string;
+  pred: string;
+  pred_prob: string;
+  high_days: string;
+  limit_up_type: string;
+  change_rate: string;
+};
+
+const isLoading = ref(false)
+const pickedDate = ref(new Date().toISOString())
 const prevDate = computed(() => {
   const date = new Date()
   date.setDate(new Date(pickedDate.value).getDate() - 1)
   return date.toISOString()
 })
-const tableData = ref<Prediction[]>([])
+const tableData = ref<TabelData[]>([])
 const limitUpDetail = ref<{ [key: string]: LimitUpDetail }>({})
 const details = ref<LimitUpDetail>()
 
+const svg = `
+        <path class="path" d="
+          M 30 15
+          L 28 17
+          M 25.61 25.61
+          A 15 15, 0, 0, 1, 15 30
+          A 15 15, 0, 1, 1, 27.99 7.5
+          L 15 15
+        " style="stroke-width: 4px; fill: rgba(0, 0, 0, 0)"/>
+        `
+
 const fetchPredictions = async () => {
-  getLimitUpDetail(formatDate(prevDate.value)).then((resp) => {
+  isLoading.value = true;
+  await getLimitUpDetail(formatDate(prevDate.value)).then((resp) => {
     resp.data.data.map((item) => {
       limitUpDetail.value[item.code] = item;
     });
@@ -61,7 +90,24 @@ const fetchPredictions = async () => {
 
   getPrediction(formatDate(pickedDate.value)).then((resp) => {
     tableData.value.length = 0;
-    tableData.value.push(...resp.data.data)
+    const result = resp.data.data.map((value) => ({
+      date: value.date,
+      code: value.code,
+      name: value.name,
+      pred: value.pred,
+      pred_prob: value.pred_prob,
+      change_rate: value.change_rate,
+      high_days: "",
+      limit_up_type: "",
+    }));
+
+    result.forEach(r => {
+      r.high_days = limitUpDetail.value[r.code].high_days;
+      r.limit_up_type = limitUpDetail.value[r.code].limit_up_type;
+    })
+
+    tableData.value.push(...result)
+    isLoading.value = false;
   })
 };
 
