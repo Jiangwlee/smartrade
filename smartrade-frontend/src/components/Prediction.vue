@@ -13,8 +13,8 @@
 
     <el-row :gutter="20">
       <el-col :span="12" justify="space-between">
-        <el-table :data="tableData" style="width: 100%" v-loading="isLoading" element-loading-text="数据加载中..."
-          :element-loading-spinner="svg" element-loading-svg-view-box="-10, -10, 50, 50"
+        <el-table :data="predictionData.tableData" style="width: 100%" v-loading="isLoading"
+          element-loading-text="数据加载中..." :element-loading-spinner="svg" element-loading-svg-view-box="-10, -10, 50, 50"
           :row-class-name="tableRowClassName" @row-click="showDetail">
           <el-table-column prop="date" label="日期" />
           <el-table-column prop="code" label="股票代码">
@@ -33,7 +33,7 @@
         </el-table>
       </el-col>
       <el-col :span="12">
-        <StockInfo :details="details" />
+        <StockInfo :details="predictionData.details" />
       </el-col>
     </el-row>
   </div>
@@ -44,19 +44,10 @@ import { ref, onMounted, computed } from 'vue';
 import { ElNotification } from 'element-plus';
 import { getLimitUpDetail, getPrediction, downloadOneDay } from '@/services/requests'
 import StockInfo from '@/components/StockInfo.vue'
-import type { Prediction, LimitUpDetail } from '@/services/types';
+import type { Prediction } from '@/services/types';
+import { usePredictionStore } from '@/stores/prediction';
 import 'dayjs/locale/zh-cn'
 
-interface TabelData {
-  date: string;
-  code: string;
-  name: string;
-  pred: string;
-  pred_prob: string;
-  high_days: string;
-  limit_up_type: string;
-  change_rate: string;
-};
 
 const isLoading = ref(false)
 const pickedDate = ref(new Date().toISOString())
@@ -65,9 +56,7 @@ const prevDate = computed(() => {
   date.setDate(new Date(pickedDate.value).getDate() - 1)
   return date.toISOString()
 })
-const tableData = ref<TabelData[]>([])
-const limitUpDetail = ref<{ [key: string]: LimitUpDetail }>({})
-const details = ref<LimitUpDetail>()
+const predictionData = usePredictionStore()
 
 const svg = `
         <path class="path" d="
@@ -84,12 +73,11 @@ const fetchPredictions = async () => {
   isLoading.value = true;
   await getLimitUpDetail(formatDate(prevDate.value)).then((resp) => {
     resp.data.data.map((item) => {
-      limitUpDetail.value[item.code] = item;
+      predictionData.limitUpDetailMap[item.code] = item;
     });
   });
 
   getPrediction(formatDate(pickedDate.value)).then((resp) => {
-    tableData.value.length = 0;
     const result = resp.data.data.map((value) => ({
       date: value.date,
       code: value.code,
@@ -102,11 +90,12 @@ const fetchPredictions = async () => {
     }));
 
     result.forEach(r => {
-      r.high_days = limitUpDetail.value[r.code].high_days;
-      r.limit_up_type = limitUpDetail.value[r.code].limit_up_type;
+      r.high_days = predictionData.limitUpDetailMap[r.code].high_days;
+      r.limit_up_type = predictionData.limitUpDetailMap[r.code].limit_up_type;
     })
 
-    tableData.value.push(...result)
+    predictionData.tableData.length = 0
+    predictionData.tableData.push(...result)
     isLoading.value = false;
   })
 };
@@ -130,8 +119,7 @@ const download = async () => {
 const showDetail = (row: Prediction, column: any, event: Event) => {
   console.log(row.code);
   if (row.code != '') {
-    details.value = limitUpDetail.value[row.code];
-    console.log(details.value);
+    predictionData.details = predictionData.limitUpDetailMap[row.code];
   }
 }
 
@@ -190,10 +178,6 @@ const formatDate = (value: string) => {
     return '';
   }
 }
-
-onMounted(() => {
-  // fetchPredictions();
-});
 </script>
 
 <style lang="scss" scoped>
