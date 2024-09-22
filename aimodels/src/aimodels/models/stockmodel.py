@@ -395,11 +395,13 @@ class Predictor:
                     global_index = batch_idx * 64 + i
                     prob = probabilities[i][0].item() if label == 0 else probabilities[i][1].item()
                     prob = round(prob * 100, 2)
+                    change_rate = round(csv_reader.features[global_index][8] * 100, 2)
                     self.result.append(
                         {
                             "code": f"{csv_reader.descriptions[global_index][0]:06}",
                             "name": f"{csv_reader.descriptions[global_index][1]}",
                             "date": f"{csv_reader.descriptions[global_index][2]}",
+                            "change_rate": f"{change_rate}%",
                             "pred": self.label_text[label],
                             "pred_label": label,
                             "pred_prob": f"{prob}%"
