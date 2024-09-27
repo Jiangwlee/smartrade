@@ -9,7 +9,7 @@ const routes = [
     children: [
       {
         path: '',
-        component: () => import('@/components/HelloWorld.vue'),
+        component: () => import('@/components/Prediction.vue'),
         name: 'home',
       },
     ],
@@ -28,15 +28,15 @@ const routes = [
     ],
   },
   {
-    path: '/helloworld',
-    name: '测试',
+    path: '/evaluation',
+    name: '评估',
     component: TheLayout,
-    redirect: '/helloworld/index',
+    redirect: '/evaluation/index',
     children: [
       {
         path: 'index',
-        component: () => import('@/components/HelloWorld.vue'),
-        name: 'helloworld',
+        component: () => import('@/components/Evaluation.vue'),
+        name: 'evaluation',
       },
     ],
   },

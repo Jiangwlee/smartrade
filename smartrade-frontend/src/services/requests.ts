@@ -1,21 +1,28 @@
 import apiClient from "./api";
-import type { APIResponse, Prediction, LimitUpDetail } from "./types";
+import type { APIResponse, Prediction, LimitUpDetail, StockRankInfo, Evaluation } from "./types";
 
-async function getPrediction(date: string) {
+export async function getEvaluation(date: string) {
+  return await apiClient.get<APIResponse<Evaluation[]>>(`evaluation/${date}`);
+}
+
+export async function getPrediction(date: string) {
   return await apiClient.get<APIResponse<Prediction[]>>(`prediction/${date}`);
 }
 
-async function getLimitUpDetail(date: string) {
+export async function getLimitUpDetail(date: string) {
   return await apiClient.get<APIResponse<LimitUpDetail[]>>(
     `/limitup/details/${date}`
   );
 }
 
-async function downloadOneDay(date: string) {
-  return await apiClient.post<APIResponse<{}>>(`/hangqing/`, {
+export async function downloadOneDay(date: string) {
+  return await apiClient.post<APIResponse<{}>>('/hangqing/', {
     start: date,
     end: date,
   });
 }
 
-export { getPrediction, getLimitUpDetail, downloadOneDay };
+export async function getEastmoneyRank() {
+  return await apiClient.get<APIResponse<StockRankInfo[]>>('/rank/');
+}
+

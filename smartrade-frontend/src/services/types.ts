@@ -42,3 +42,19 @@ export type LimitUpDetail = {
   block_ids: string;
   blocks: BlockDetail[];
 };
+
+export type StockRankInfo = {
+  sc: string,
+  rk: number,
+  rc: number,
+  hisRc: number
+}
+
+export type Evaluation = {
+  date: string,
+  code: string,
+  name: string,
+  pred: string,
+  real: string,
+  pred_prob: string
+}

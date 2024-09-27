@@ -1,26 +1,26 @@
 import { defineStore } from 'pinia'
 import type { LimitUpDetail } from '@/services/types';
 
-export type PredictionTabelData = {
+type EvaluationTabelData = {
   date: string;
   code: string;
   name: string;
   pred: string;
+  real: string;
   pred_prob: string;
   high_days: string;
   limit_up_type: string;
-  change_rate: string;
   rank: number;
 };
 
-type PredictionState = {
-  tableData: PredictionTabelData[],
+type EvaluationState = {
+  tableData: EvaluationTabelData[]
   limitUpDetailMap: { [key: string]: LimitUpDetail }
   details: LimitUpDetail | undefined
 }
 
-export const usePredictionStore = defineStore('prediction', {
-    state: (): PredictionState => {
+export const useEvaluationStore = defineStore('evaluation', {
+    state: (): EvaluationState => {
       return { 
         tableData: [] ,
         limitUpDetailMap: {},
