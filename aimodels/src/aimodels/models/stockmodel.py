@@ -20,7 +20,7 @@ from typing import List
 
 from crawlers.utils.dbutil import rows_to_models
 from aimodels.config import MODEL_DIR
-from aimodels.dto.prediction import PredResult
+from aimodels.dto.prediction import PredResult, EvalResult
 
 """
 CSV 数据加载器.
@@ -278,7 +278,6 @@ class Evaluator:
         self.label_text = ['连板', '断板']
         self.result = []
 
-
     def run(self):
         csv_reader = CsvReader(self.path)
         dataset = StockDataset(csv_reader.features, csv_reader.labels)
@@ -308,23 +307,25 @@ class Evaluator:
                 predicted_labels = predicted_indices.cpu().numpy()
                 for i, label in enumerate(predicted_labels):
                     global_index = batch_idx * 64 + i
-                    prob = probabilities[i][0] if label == 0 else probabilities[i][1]
+                    prob = probabilities[i][0].item() if label == 0 else probabilities[i][1].item()
+                    prob = round(prob * 100, 2)
                     self.result.append(
                         {
-                            "code": csv_reader.descriptions[global_index][0],
-                            "name": csv_reader.descriptions[global_index][1],
-                            "date": csv_reader.descriptions[global_index][2],
+                            "code": f"{csv_reader.descriptions[global_index][0]:06}",
+                            "name": f"{csv_reader.descriptions[global_index][1]}",
+                            "date": f"{csv_reader.descriptions[global_index][2]}",
                             "pred": self.label_text[label],
                             "real": self.label_text[y[i]],
                             "pred_label": label,
                             "real_label": f"{y[i]}",
                             "success": self.label_text[label] == self.label_text[y[i]],
-                            "pred_prob": f"{prob * 100}%"
+                            "pred_prob": f"{prob}%"
                         }
                     )
                     
                     print(f'输入数据 [{global_index:04}] 的预测结果: {self.label_text[label]}, 实际结果: {self.label_text[y[i]]}, 预测概率: {prob * 100}%')
                 batch_idx += 1
+            self.result = sorted(self.result, key=lambda x: x['real_label'])
 
     def calculate_rate(self, result: list):
         matched_list = [x for x in result if x["success"]]
@@ -349,6 +350,9 @@ class Evaluator:
             writer.writeheader()
             writer.writerows(dicts)
             print(f"保存数据集至: {self.result_path}")
+
+    def get_results(self) -> List[EvalResult]:
+        return [EvalResult(**x) for x in self.result]
 
 
 class Predictor:

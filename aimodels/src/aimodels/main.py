@@ -1,9 +1,10 @@
 import os
 from fastapi import FastAPI
+from fastapi.responses import JSONResponse, PlainTextResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from crawlers.services.ai import make_dataset, download_hangqing
-from crawlers.services.limitup import get_limitup_details
+from crawlers.services.limitup import get_limitup_details, get_eastmoney_rank
 from crawlers.services.dto import LimitUpDetailsDto
 from aimodels.config import PRED_DATASET, PRED_RESULT, EVAL_DATASET, EVAL_RESULT
 from aimodels.utils.logger import get_logger
@@ -20,11 +21,7 @@ app = FastAPI(
 
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request, exc):
-    return HttpResp(
-        code=exc.status_code,
-        data=None,
-        msg=str(exc.detail)
-    )
+    return PlainTextResponse(str(exc.detail), status_code=exc.status_code)
 
 @app.get("/")
 async def root():
@@ -58,10 +55,26 @@ async def evaluate(date):
     evaluator.summarize()
     evaluator.save()
 
+    return HttpResp(
+        code=200,
+        data=evaluator.get_results(),
+        msg="操作成功"
+    )
+
 @app.get("/limitup/details/{date}", description="涨停详情")
 async def limit_up_details(date):
     log.info(f"查询涨停详情 {date}")
     results = get_limitup_details(date)
+    return HttpResp(
+        code=200,
+        data=results,
+        msg="操作成功"
+    )
+
+@app.get("/rank/", description="东方财富实时人气排名")
+async def rank():
+    log.info(f"查询东方财富人气排名")
+    results = get_eastmoney_rank()
     return HttpResp(
         code=200,
         data=results,
