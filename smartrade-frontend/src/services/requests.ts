@@ -1,5 +1,5 @@
 import apiClient from "./api";
-import type { APIResponse, Prediction, LimitUpDetail, LimitUpLadder, StockRankInfo, Evaluation } from "./types";
+import type { APIResponse, Prediction, LimitUpDetail, LimitUpLadder, StockRankInfo, Evaluation, LimitUpLeadingStock } from "./types";
 
 export async function getEvaluation(date: string) {
   return await apiClient.get<APIResponse<Evaluation[]>>(`evaluation/${date}`);
@@ -18,6 +18,12 @@ export async function getLimitUpDetail(date: string) {
 export async function getLimitUpLadder(date: string) {
   return await apiClient.get<APIResponse<LimitUpLadder[]>>(
     `/limitup/ladder/${date}`
+  );
+}
+
+export async function getLeadingStocks(date: string) {
+  return await apiClient.get<APIResponse<LimitUpLeadingStock[]>>(
+    `/limitup/leadingstock/${date}`
   );
 }
 

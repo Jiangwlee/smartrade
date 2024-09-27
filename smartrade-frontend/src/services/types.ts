@@ -29,6 +29,12 @@ export type LimitUpLadder = {
   stocks: string[]
 }
 
+export type LimitUpLeadingStock = {
+  date: string,
+  continuous_num: number,
+  stocks: string
+}
+
 export type LimitUpDetail = {
   code: string;
   name: string;
