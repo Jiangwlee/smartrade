@@ -8,7 +8,7 @@
           </el-col>
           <el-col :span="24">
             <el-menu mode="horizontal" :router="true" :ellipsis="true">
-              <el-menu-item index="/home">Go to Home</el-menu-item>
+              <el-menu-item index="/home">复盘</el-menu-item>
               <el-menu-item index="/prediction">连板预测</el-menu-item>
               <el-menu-item index="/evaluation">模型评估</el-menu-item>
             </el-menu>

@@ -24,6 +24,11 @@ export type BlockDetail = {
   rank_position: 2;
 };
 
+export type LimitUpLadder = {
+  height: number,
+  stocks: string[]
+}
+
 export type LimitUpDetail = {
   code: string;
   name: string;

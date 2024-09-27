@@ -9,7 +9,7 @@ const routes = [
     children: [
       {
         path: '',
-        component: () => import('@/components/Prediction.vue'),
+        component: () => import('@/components/Review.vue'),
         name: 'home',
       },
     ],
