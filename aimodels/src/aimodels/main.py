@@ -10,6 +10,7 @@ from aimodels.config import PRED_DATASET, PRED_RESULT, EVAL_DATASET, EVAL_RESULT
 from aimodels.utils.logger import get_logger
 from aimodels.models.stockmodel import Predictor, Evaluator
 from aimodels.dto.common import HttpResp, DatePair
+from aimodels.services.review import get_limitup_ladder, get_leading_stock
 
 log = get_logger()
 
@@ -70,6 +71,27 @@ async def limit_up_details(date):
         data=results,
         msg="操作成功"
     )
+
+@app.get("/limitup/ladder/{date}", description="连板天梯")
+async def limit_up_ladder(date):
+    log.info(f"查询连板天梯 {date}")
+    results = get_limitup_ladder(date)
+    return HttpResp(
+        code=200,
+        data=results,
+        msg="操作成功"
+    )
+
+@app.get("/limitup/leadingstock/{date}", description="每天最高连板")
+async def limit_up_leading_stock(date):
+    log.info(f"查询最高连板 {date}")
+    results = get_leading_stock(date)
+    return HttpResp(
+        code=200,
+        data=results,
+        msg="操作成功"
+    )
+
 
 @app.get("/rank/", description="东方财富实时人气排名")
 async def rank():
