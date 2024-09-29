@@ -4,7 +4,7 @@
 
 import requests
 from typing import List
-from dto import StockRankInfo
+from crawlers.eastmoney.dto import StockRankInfo
 from crawlers.crawler import CrawlerBase
 from crawlers.utils.logger import get_logger
 

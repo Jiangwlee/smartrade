@@ -6,6 +6,7 @@ from crawlers.utils.logger import get_logger
 from crawlers.utils.dbutil import rows_to_models
 from crawlers.utils.dateutil import get_last_N_trade_date
 from crawlers.db.connector import getConnection
+from crawlers.eastmoney.stockrank import StockRankInfo, StockRankCrawler
 
 log = get_logger()
 
@@ -86,5 +87,15 @@ def get_block_summary(date) -> List[BlockSummayDto]:
     except Exception as ex:
         log.error(ex)
 
+def get_eastmoney_rank() -> List[StockRankInfo]:
+    """获取东方财富人气排名.
+    
+    Returns:
+        StockRankInfo: 东方财富人气排名.
+    """
+    log.info("正在查询东方财富实时人气排名")
+    spider = StockRankCrawler()
+    return spider.crawl()
+
 if __name__ == '__main__':
-    print(get_limitup_details('20240917'))
+    print(get_eastmoney_rank())
