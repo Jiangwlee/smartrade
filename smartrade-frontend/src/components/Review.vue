@@ -21,7 +21,17 @@
     </el-row>
 
     <el-row>标题栏</el-row>
-    <el-row>最强板块</el-row>
+    <el-row :gutter="20">
+      <el-col :span="12">
+        <TrendChart :source="limitUpDownTrend" />
+      </el-col>
+      <el-col :span="12">
+        <TopStocks :date="formattedDate"/>
+      </el-col>
+    </el-row>
+    <el-row>
+      <BoardReview :date="formattedDate" />
+    </el-row>
     <el-row :gutter="20">
       <el-col :span="12" justify="start">
         <el-table
@@ -48,9 +58,17 @@
           >
             <template #default="scope">
               <div class="flex-gap">
-                <el-tag type="primary" v-for="item in scope.row.stocks">{{
-                  item
-                }}</el-tag>
+                <el-tag
+                  type="primary"
+                  v-for="item in scope.row.stocks"
+                  class="stock-tag"
+                >
+                  <div style="display: flex; align-items: center">
+                    <a :href="getEastmoneyLink(item.code)" target="_blank">{{
+                      item.name
+                    }}</a>
+                  </div>
+                </el-tag>
               </div>
             </template>
           </el-table-column>
@@ -68,10 +86,17 @@
 import { computed, watch, ref, onMounted } from 'vue'
 import { ElNotification } from 'element-plus'
 import type { LimitUpLadder } from '@/services/types'
-import { downloadOneDay, getLimitUpLadder } from '@/services/requests'
-import ContinuousLimitUpChart from '@/components/chats/ContinuousLimitUpChart.vue'
+import {
+  downloadOneDay,
+  getLimitUpLadder,
+  getLimitUpDownTrend,
+} from '@/services/requests'
+import BoardReview from './BoardReview.vue'
 import LineChart from './chats/LineChart.vue'
+import TrendChart from './chats/TrendChart.vue'
+import TopStocks from './TopStocks.vue'
 import 'dayjs/locale/zh-cn'
+import { getEastmoneyLink } from '@/utils/stocks'
 
 interface ReviewData {
   ladder: LimitUpLadder[]
@@ -82,11 +107,18 @@ const formattedDate = computed(() => formatDate(pickedDate.value))
 const reviewData = ref<ReviewData>({
   ladder: [],
 })
+const limitUpDownTrend = ref<Array<Array<string | number>>>([])
 
 const review = async () => {
   getLimitUpLadder(formatDate(pickedDate.value)).then(
     (resp) => (reviewData.value.ladder = resp.data.data),
   )
+}
+
+const fetchLimitUpDownTrend = async () => {
+  getLimitUpDownTrend(formatDate(pickedDate.value)).then((resp) => {
+    limitUpDownTrend.value = resp.data.data
+  })
 }
 
 const download = async () => {
@@ -149,11 +181,15 @@ const formatDate = (value: string) => {
 
 watch(pickedDate, (newVal, oldVal) => {
   if (newVal !== oldVal) {
-    review();
+    review()
+    fetchLimitUpDownTrend()
   }
 })
 
-onMounted(() => review())
+onMounted(() => {
+  review()
+  fetchLimitUpDownTrend()
+})
 </script>
 
 <style lang="scss" scoped>
@@ -198,5 +234,13 @@ onMounted(() => review())
 .grid-content {
   border-radius: 4px;
   min-height: 36px;
+}
+
+.stock-tag {
+  font-size: small;
+  width: 80px;
+  background-color: white;
+  color: gray;
+  border-color: coral;
 }
 </style>

@@ -1,5 +1,5 @@
 import apiClient from "./api";
-import type { APIResponse, Prediction, LimitUpDetail, LimitUpLadder, StockRankInfo, Evaluation, LimitUpLeadingStock } from "./types";
+import type { APIResponse, Prediction, LimitUpDetail, LimitUpLadder, StockRankInfo, Evaluation, LimitUpLeadingStock, BoardDetails, TopStock } from "./types";
 
 export async function getEvaluation(date: string) {
   return await apiClient.get<APIResponse<Evaluation[]>>(`evaluation/${date}`);
@@ -27,6 +27,22 @@ export async function getLeadingStocks(date: string) {
   );
 }
 
+export async function getLeadingBlocks(date: string) {
+  return await apiClient.get<APIResponse<BoardDetails[]>>(
+    `/limitup/blocks/${date}`
+  );
+}
+
+export async function getLimitUpDownTrend(date: string) {
+  return await apiClient.get<APIResponse<Array<Array<string | number>>>>(
+    `/limitup/trend/${date}`
+  );
+}
+
+export async function getTopStocks(date: string) {
+  return await apiClient.get<APIResponse<TopStock[]>>(`/limitup/top/${date}`);
+}
+
 export async function downloadOneDay(date: string) {
   return await apiClient.post<APIResponse<{}>>('/hangqing/', {
     start: date,
@@ -37,4 +53,6 @@ export async function downloadOneDay(date: string) {
 export async function getEastmoneyRank() {
   return await apiClient.get<APIResponse<StockRankInfo[]>>('/rank/');
 }
+
+
 

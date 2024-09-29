@@ -26,7 +26,12 @@ export type BlockDetail = {
 
 export type LimitUpLadder = {
   height: number,
-  stocks: string[]
+  stocks: [
+    {
+      name: string,
+      code: string
+    }
+  ]
 }
 
 export type LimitUpLeadingStock = {
@@ -68,4 +73,25 @@ export type Evaluation = {
   pred: string,
   real: string,
   pred_prob: string
+}
+
+export type BoardDetails = {
+  name: string,
+  change_rate: number,
+  limit_up_num: number,
+  continuous_plate_num: number,
+  high: string,
+  top0: string,
+  top1?: string,
+  top2?: string
+}
+
+export type TopStock = {
+  code: string,
+  name: string,
+  count: number,
+  high: string,
+  last: string,
+  first: string,
+  duration: number
 }

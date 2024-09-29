@@ -112,6 +112,7 @@ import {
 } from '@/stores/prediction'
 import { loadingIcon } from './icons/icons'
 import 'dayjs/locale/zh-cn'
+import { getEastmoneyLink } from '@/utils/stocks'
 
 const isLoading = ref(false)
 const pickedDate = ref(new Date().toISOString())
@@ -206,14 +207,6 @@ const tableRowClassName = ({
     return 'highlight-row'
   } else {
     return ''
-  }
-}
-
-const getEastmoneyLink = (code: string) => {
-  if (code.startsWith('6')) {
-    return `https://quote.eastmoney.com/sh${code}.html`
-  } else {
-    return `https://quote.eastmoney.com/sz${code}.html`
   }
 }
 
