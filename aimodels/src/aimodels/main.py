@@ -10,7 +10,13 @@ from aimodels.config import PRED_DATASET, PRED_RESULT, EVAL_DATASET, EVAL_RESULT
 from aimodels.utils.logger import get_logger
 from aimodels.models.stockmodel import Predictor, Evaluator
 from aimodels.dto.common import HttpResp, DatePair
-from aimodels.services.review import get_limitup_ladder, get_leading_stock
+from aimodels.services.review import (
+    get_limitup_ladder, 
+    get_leading_stock, 
+    get_latest_date, 
+    get_limit_up_down_trend,
+    get_top_stocks,
+    get_top_block_details)
 
 log = get_logger()
 
@@ -75,6 +81,7 @@ async def limit_up_details(date):
 @app.get("/limitup/ladder/{date}", description="连板天梯")
 async def limit_up_ladder(date):
     log.info(f"查询连板天梯 {date}")
+    date = validate_date(date)
     results = get_limitup_ladder(date)
     return HttpResp(
         code=200,
@@ -86,6 +93,39 @@ async def limit_up_ladder(date):
 async def limit_up_leading_stock(date):
     log.info(f"查询最高连板 {date}")
     results = get_leading_stock(date)
+    return HttpResp(
+        code=200,
+        data=results,
+        msg="操作成功"
+    )
+
+@app.get("/limitup/blocks/{date}", description="领涨板块")
+async def limit_up_leading_blocks(date):
+    log.info(f"查询领涨板块 {date}")
+    date = validate_date(date)
+    results = get_top_block_details(date)
+    return HttpResp(
+        code=200,
+        data=results,
+        msg="操作成功"
+    )
+
+@app.get("/limitup/trend/{date}", description="涨跌停趋势")
+async def limit_up_down_trend(date):
+    log.info(f"查询涨跌停趋势 {date}")
+    date = validate_date(date)
+    results = get_limit_up_down_trend(date)
+    return HttpResp(
+        code=200,
+        data=results,
+        msg="操作成功"
+    )
+
+@app.get("/limitup/top/{date}", description="过去 100 个自然日最强个股")
+async def limit_up_top_stocks(date):
+    log.info(f"查询最强个股 {date}")
+    date = validate_date(date)
+    results = get_top_stocks(date)
     return HttpResp(
         code=200,
         data=results,
@@ -112,3 +152,11 @@ async def download(date: DatePair):
         data={},
         msg="操作成功"
     )
+
+def validate_date(date: str):
+    result = get_latest_date()
+    log.info(f"最近涨停日期: {result}")
+    if result != None and len(result) > 0:
+        if date > result:
+            return result
+    return date
