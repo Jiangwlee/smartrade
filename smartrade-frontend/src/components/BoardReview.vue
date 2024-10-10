@@ -15,9 +15,9 @@
         <div class="card-footer">
             <span class="card-title">板块领涨</span>
             <ul class="card-list">
-                <li><span class="stock-title">{{ card.top0.split(':')[0] }}</span>: <span>{{ card.top0.split(':')[1] }}</span></li>
-                <li><span class="stock-title">{{ card.top1?.split(':')[0] }}</span>: <span>{{ card.top1?.split(':')[1] }}</span></li>
-                <li><span class="stock-title">{{ card.top2?.split(':')[0] }}</span>: <span>{{ card.top2?.split(':')[1] }}</span></li>
+                <li v-if="card.top0"><span class="stock-title">{{ card.top0.split(':')[0] }}</span>: <span>{{ card.top0.split(':')[1] }}</span></li>
+                <li v-if="card.top1"><span class="stock-title">{{ card.top1?.split(':')[0] }}</span>: <span>{{ card.top1?.split(':')[1] }}</span></li>
+                <li v-if="card.top2"><span class="stock-title">{{ card.top2?.split(':')[0] }}</span>: <span>{{ card.top2?.split(':')[1] }}</span></li>
             </ul>
         </div>
     </template>

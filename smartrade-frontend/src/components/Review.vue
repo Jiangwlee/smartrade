@@ -26,7 +26,7 @@
         <TrendChart :source="limitUpDownTrend" />
       </el-col>
       <el-col :span="12">
-        <TopStocks :date="formattedDate"/>
+        <TopStocks :date="formattedDate" />
       </el-col>
     </el-row>
     <el-row>
@@ -61,7 +61,7 @@
                 <el-tag
                   type="primary"
                   v-for="item in scope.row.stocks"
-                  class="stock-tag"
+                  :class="stockCodeStyle(item.code)"
                 >
                   <div style="display: flex; align-items: center">
                     <a :href="getEastmoneyLink(item.code)" target="_blank">{{
@@ -108,6 +108,10 @@ const reviewData = ref<ReviewData>({
   ladder: [],
 })
 const limitUpDownTrend = ref<Array<Array<string | number>>>([])
+
+const stockCodeStyle = (code: string) => {
+  return code.startsWith("3") ? "stock-tag-3" : "stock-tag";
+}
 
 const review = async () => {
   getLimitUpLadder(formatDate(pickedDate.value)).then(
@@ -241,6 +245,14 @@ onMounted(() => {
   width: 80px;
   background-color: white;
   color: gray;
+  border-color: coral;
+}
+
+.stock-tag-3 {
+  font-size: small;
+  width: 80px;
+  background-color: #ec7063;
+  color: white;
   border-color: coral;
 }
 </style>

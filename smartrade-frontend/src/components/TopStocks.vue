@@ -26,12 +26,11 @@
     <el-table-column prop="duration" label="涨停周期" />
   </el-table>
   <el-pagination
-    small
+    size="small"
     layout="total,prev,pager,next,jumper"
-    :total="tableData?.length"
-    :page-size="pageSize"
-    pager-count="5"
-    :current-page="currentPage"
+    :total="tableData?.length || 0"
+    v-model:page-size="pageSize"
+    v-model:current-page="currentPage"
     @current-change="handleCurrentChange"
   ></el-pagination>
 </template>
