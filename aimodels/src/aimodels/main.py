@@ -17,6 +17,9 @@ from aimodels.services.review import (
     get_limit_up_down_trend,
     get_top_stocks,
     get_top_block_details)
+from aimodels.services.pattern import (
+    get_reversal_stocks
+)
 
 log = get_logger()
 
@@ -150,6 +153,16 @@ async def download(date: DatePair):
     return HttpResp(
         code=200,
         data={},
+        msg="操作成功"
+    )
+
+@app.get("/pattern/reversal", description="今日反包股票")
+async def rank():
+    log.info(f"查询今日反包股票")
+    results = get_reversal_stocks()
+    return HttpResp(
+        code=200,
+        data=results,
         msg="操作成功"
     )
 

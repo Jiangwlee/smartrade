@@ -20,12 +20,32 @@
       </el-col>
     </el-row>
 
-    <el-row>标题栏</el-row>
     <el-row :gutter="20">
       <el-col :span="12">
         <TrendChart :source="limitUpDownTrend" />
       </el-col>
       <el-col :span="12">
+        <el-card>
+          <template #header>
+            <div class="card-title">
+              <span>今日反包个股</span>
+            </div>
+          </template>
+          <div class="flex-gap">
+            <el-tag
+              type="primary"
+              v-for="item in reversalPatternStocks"
+              :class="stockCodeStyle(item.toString())"
+            >
+              <div style="display: flex; align-items: center">
+                <a :href="getEastmoneyLink(item[0])" target="_blank">{{
+                  item[1]
+                }}</a>
+              </div>
+            </el-tag>
+          </div>
+        </el-card>
+        <el-divider />
         <TopStocks :date="formattedDate" />
       </el-col>
     </el-row>
@@ -90,10 +110,11 @@ import {
   downloadOneDay,
   getLimitUpLadder,
   getLimitUpDownTrend,
+  getReversalStocks,
 } from '@/services/requests'
 import BoardReview from './BoardReview.vue'
-import LineChart from './chats/LineChart.vue'
-import TrendChart from './chats/TrendChart.vue'
+import LineChart from './charts/LineChart.vue'
+import TrendChart from './charts/TrendChart.vue'
 import TopStocks from './TopStocks.vue'
 import 'dayjs/locale/zh-cn'
 import { getEastmoneyLink } from '@/utils/stocks'
@@ -108,6 +129,13 @@ const reviewData = ref<ReviewData>({
   ladder: [],
 })
 const limitUpDownTrend = ref<Array<Array<string | number>>>([])
+const reversalPatternStocks = ref<Array<Array<string>>>([])
+
+const getReversalPatternStocks = async () => {
+  getReversalStocks().then(
+    (resp) => reversalPatternStocks.value = resp.data.data,
+  )
+}
 
 const stockCodeStyle = (code: string) => {
   return code.startsWith("3") ? "stock-tag-3" : "stock-tag";
@@ -193,6 +221,7 @@ watch(pickedDate, (newVal, oldVal) => {
 onMounted(() => {
   review()
   fetchLimitUpDownTrend()
+  getReversalPatternStocks()
 })
 </script>
 
@@ -254,5 +283,16 @@ onMounted(() => {
   background-color: #ec7063;
   color: white;
   border-color: coral;
+}
+
+.board-card {
+    width: 15.5%;
+    margin: 0.5%;
+    color: gray
+}
+
+.card-title {
+    font-weight: bold;
+    color: gray
 }
 </style>

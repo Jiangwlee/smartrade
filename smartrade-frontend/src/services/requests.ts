@@ -54,5 +54,8 @@ export async function getEastmoneyRank() {
   return await apiClient.get<APIResponse<StockRankInfo[]>>('/rank/');
 }
 
+export async function getReversalStocks() {
+  return await apiClient.get<APIResponse<Array<Array<string>>>>('/pattern/reversal');
+}
 
 
