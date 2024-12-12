@@ -58,4 +58,8 @@ export async function getReversalStocks() {
   return await apiClient.get<APIResponse<Array<Array<string>>>>('/pattern/reversal');
 }
 
+export async function getBreakStocks() {
+  return await apiClient.get<APIResponse<Array<Array<string>>>>('/pattern/break');
+}
+
 

@@ -18,7 +18,8 @@ from aimodels.services.review import (
     get_top_stocks,
     get_top_block_details)
 from aimodels.services.pattern import (
-    get_reversal_stocks
+    get_reversal_stocks,
+    get_break_stocks
 )
 
 log = get_logger()
@@ -157,9 +158,19 @@ async def download(date: DatePair):
     )
 
 @app.get("/pattern/reversal", description="今日反包股票")
-async def rank():
+async def reversal():
     log.info(f"查询今日反包股票")
     results = get_reversal_stocks()
+    return HttpResp(
+        code=200,
+        data=results,
+        msg="操作成功"
+    )
+
+@app.get("/pattern/break", description="今日断板（二板以上）股票")
+async def break_stocks():
+    log.info(f"查询今日断板股票")
+    results = get_break_stocks()
     return HttpResp(
         code=200,
         data=results,

@@ -46,6 +46,27 @@
           </div>
         </el-card>
         <el-divider />
+        <el-card>
+          <template #header>
+            <div class="card-title">
+              <span>今日断板个股（二连板以上断板）</span>
+            </div>
+          </template>
+          <div class="flex-gap">
+            <el-tag
+              type="primary"
+              v-for="item in breakPatternStocks"
+              :class="stockCodeStyle(item.toString())"
+            >
+              <div style="display: flex; align-items: center">
+                <a :href="getEastmoneyLink(item[0])" target="_blank">{{
+                  item[1]
+                }}</a>
+              </div>
+            </el-tag>
+          </div>
+        </el-card>
+        <el-divider />
         <TopStocks :date="formattedDate" />
       </el-col>
     </el-row>
@@ -111,6 +132,7 @@ import {
   getLimitUpLadder,
   getLimitUpDownTrend,
   getReversalStocks,
+  getBreakStocks
 } from '@/services/requests'
 import BoardReview from './BoardReview.vue'
 import LineChart from './charts/LineChart.vue'
@@ -130,10 +152,17 @@ const reviewData = ref<ReviewData>({
 })
 const limitUpDownTrend = ref<Array<Array<string | number>>>([])
 const reversalPatternStocks = ref<Array<Array<string>>>([])
+const breakPatternStocks = ref<Array<Array<string>>>([])
 
 const getReversalPatternStocks = async () => {
   getReversalStocks().then(
     (resp) => reversalPatternStocks.value = resp.data.data,
+  )
+}
+
+const getBreakPatternStocks = async () => {
+  getBreakStocks().then(
+    (resp) => breakPatternStocks.value = resp.data.data,
   )
 }
 
@@ -222,6 +251,7 @@ onMounted(() => {
   review()
   fetchLimitUpDownTrend()
   getReversalPatternStocks()
+  getBreakPatternStocks()
 })
 </script>
 
