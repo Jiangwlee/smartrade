@@ -4,7 +4,7 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 // create an axios instance
 const apiClient = axios.create({
   // baseURL: process.env.VITE_API_ENDPOINT, // url = base url + request url
-  baseURL: 'http://localhost:5173/smartrade/api',
+  baseURL: import.meta.env.VITE_API_ENDPOINT,
   // withCredentials: true, // send cookies when cross-domain requests
   timeout: 30000, // request timeout
 });

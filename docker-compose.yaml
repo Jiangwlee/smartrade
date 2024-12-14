@@ -1,0 +1,31 @@
+version: '3'
+services:
+  nginx:
+    image: nginx:alpine
+    container_name: smartrade
+    restart: always # 保证容器自动重启
+    ports:
+      - "8800:8800"
+    volumes:
+      - ./www/dist:/usr/share/nginx/html
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - aimodels
+    networks:
+      - mysql_default
+
+  aimodels:
+    image: jiangwl/smartrade:latest
+    container_name: smartrade-backend
+    restart: always
+    environment:
+      DB_HOST: "db"  # 这里替换为实际数据库主机地址或者按需求填写
+    command: fastapi run main.py
+    ports:
+      - 8801:8000
+    networks:
+      - mysql_default
+
+networks:
+  mysql_default:
+    external: true

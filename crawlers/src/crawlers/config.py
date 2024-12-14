@@ -12,6 +12,7 @@ FORMATTER = logging.Formatter('[%(levelname)-8s] - %(asctime)s - %(name)s - %(mo
 # 文件日志格式
 FILE_HANDLER = None
 if os.name == 'posix':
+    os.makedirs('/var/log/smartrade/', exist_ok=True)
     LOGFILE = '/var/log/smartrade/crawlers.log'
     FILE_HANDLER = RotatingFileHandler(LOGFILE, maxBytes=1024*1024, backupCount=3)
     FILE_HANDLER.setFormatter(FORMATTER)
@@ -24,10 +25,10 @@ CONSOLE_HANDLER.setLevel(logging.DEBUG)
 ##########################################
 # 数据库配置
 ##########################################
-DB_HOST="localhost"
-DB_USER="jfsok"
-DB_PASSWORD="iTbpamPcUYeqkY9k63rQ"
-DB_DATABASE="smartrade"
+DB_HOST=os.getenv("DB_HOST", "localhost")
+DB_USER=os.getenv("DB_USER", "jfsok")
+DB_PASSWORD=os.getenv("DB_PASSWORD", "iTbpamPcUYeqkY9k63rQ")
+DB_DATABASE=os.getenv("DB_DATABASE", "smartrade")
 DB_CONFIG = {
     "user": DB_USER,
     "password": DB_PASSWORD,

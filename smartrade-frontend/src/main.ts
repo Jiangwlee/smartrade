@@ -13,3 +13,5 @@ const app = createApp(App);
 
 app.use(router).use(ElementPlus, { locale: zhCn }).use(createPinia());
 app.mount("#app");
+console.log(process.env.NODE_ENV)
+console.log(import.meta.env)

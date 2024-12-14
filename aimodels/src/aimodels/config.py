@@ -12,6 +12,7 @@ FORMATTER = logging.Formatter('[%(levelname)-8s] - %(asctime)s - %(name)s - %(mo
 # 文件日志格式
 FILE_HANDLER = None
 if os.name == 'posix':
+    os.makedirs('/var/log/smartrade/', exist_ok=True)
     LOGFILE = '/var/log/smartrade/crawlers.log'
     FILE_HANDLER = RotatingFileHandler(LOGFILE, maxBytes=1024*1024, backupCount=3)
     FILE_HANDLER.setFormatter(FORMATTER)
