@@ -76,6 +76,6 @@ class HangQingCrawler(CrawlerBase):
 
 if __name__ == '__main__':
     # 查询每天的1分钟级别 K 线数据，第一个记录就是集合竞价成交数据
-    spider = HangQingCrawler('603883', '老百姓', '20240912', HangQingType.ONE_M, 1)
+    spider = HangQingCrawler('002593', '老百姓', '20241213', HangQingType.DAY, 1)
     result = spider.crawl()
     print(result[0])

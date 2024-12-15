@@ -9,7 +9,7 @@ from crawlers.ths.limitdown import LimitDownCrawler
 from crawlers.ths.limitupladder import LimitUpLadderCrawler
 from crawlers.ths.blocktop import TopBlockCrawler
 from crawlers.jrj.hangqing import HangQingCrawler, HangQingType
-from crawlers.db.dao import LimitUpDao, LimitDownkDao, LimitUpLadderDao, TopBlockDao, TopBlockStocksDao, StockHangQingkDao
+from crawlers.db.dao import LimitUpDao, LimitDownkDao, LimitUpLadderDao, TopBlockDao, TopBlockStocksDao, StockHangQingkDao, ZdtHangQingkDao
 
 log = get_logger()
 
@@ -63,6 +63,32 @@ class Downloader:
             dao = StockHangQingkDao()
             dao.deleteByDate(date)
             dao.insert(date, result)
+
+    def __crawl_day_hang_qing(self, date: str, code_list: list):
+        # 获取当日涨停和跌停个股
+        zdt = []
+        records = []
+        # 跌停个股
+        lddao = LimitDownkDao()
+        result = lddao.getItemsByDate(date)
+        for item in result:
+            zdt.append((item[4], item[5]))
+        # 涨停个股
+        ludao = LimitUpDao()
+        result = ludao.getItemsByDate(date)
+        for item in result:
+            zdt.append((item[4], item[5]))
+        # 下载行情
+        for item in list(set(code_list + zdt)):
+            spider = HangQingCrawler(item[0], item[1], date, HangQingType.DAY, 1)
+            result = spider.crawl()
+            records.append(result[0])
+        if len(records) == 0:
+            log.warning("未抓取到任何【涨跌停行情】数据.")
+        elif self.save_to_db:
+            dao = ZdtHangQingkDao()
+            dao.deleteByDate(date)
+            dao.insert(date, records)
 
 if __name__ == '__main__':
     downloader = Downloader('20240913', '20240913', save_to_db=False)

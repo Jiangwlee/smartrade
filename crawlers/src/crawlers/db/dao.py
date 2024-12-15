@@ -7,6 +7,7 @@ from typing import List
 from crawlers.db.connector import getConnection
 from crawlers.utils.dateutil import timestamp_to_datetime
 from crawlers.utils.logger import get_logger
+from crawlers.utils.hqutil import tag_stock
 from crawlers.ths.dto import LimitDownRespDataModel, LimitUpRespDataModel, LimitUpLadderInfo, TopBlocksInfo
 from crawlers.jrj.dto import StockHangQingInfo
 
@@ -216,12 +217,54 @@ class StockHangQingkDao(BaseDao):
         except Exception as ex:
             log.error(ex)
 
+class ZdtHangQingkDao(BaseDao):
+    """
+    涨跌停数据访问层.
+    """
+    def __init__(self):
+        super().__init__("zdt_hangqing")
+        self._insert_query = (f"INSERT INTO {self._table} (date, code, name, amount, volume, avg_price, high_price, low_price, open_price, close_price, pre_close_price, tag) "
+                             "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
+    
+    def insert(self, date:str, hangqing_list: List[StockHangQingInfo]):
+        log.info(f"Inserting data into table {self._table}")
+        try:
+            data = [(date, s.code, s.name, s.amount, s.volume, s.avg_price, s.high_price, s.low_price, s.open_price, s.close_price, s.pre_close_price, 
+                     tag_stock(s.code, s.open_price, s.close_price, s.pre_close_price, s.high_price, s.low_price)) for s in hangqing_list]
+            with getConnection() as connection:
+                with connection.cursor() as cursor:
+                    cursor.executemany(self._insert_query, data)
+                    connection.commit()
+        except Exception as ex:
+            log.error(ex)
+
 if __name__ == '__main__':
     from crawlers.jrj.hangqing import HangQingCrawler, HangQingType
-    date = '20240910'
-    spider = HangQingCrawler('603883', '老百姓', '20240912', HangQingType.ONE_M, 1)
-    result = spider.crawl()
-    result = [result[0], result[-1]]
-    dao = StockHangQingkDao()
-    # dao.deleteByDate(date)
-    # dao.insert(date, result)
+    from crawlers.utils.dateutil import get_last_N_trade_date
+    dateList = get_last_N_trade_date(100)
+    print(dateList)
+    pre_zdt = []
+    
+    for d in dateList:
+        # 获取当日涨停和跌停个股
+        zdt = []
+        records = []
+        
+        lddao = LimitDownkDao()
+        result = lddao.getItemsByDate(d)
+        for item in result:
+            zdt.append((item[4], item[5]))
+        ludao = LimitUpDao()
+        result = ludao.getItemsByDate(d)
+        for item in result:
+            zdt.append((item[4], item[5]))
+
+        for item in list(set(pre_zdt + zdt)):
+            spider = HangQingCrawler(item[0], item[1], d, HangQingType.DAY, 1)
+            result = spider.crawl()
+            print(result)
+            records.append(result[0])
+        dao = ZdtHangQingkDao()
+        dao.deleteByDate(d)
+        dao.insert(d, records)
+        pre_zdt = zdt
