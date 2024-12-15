@@ -43,6 +43,10 @@ export async function getTopStocks(date: string) {
   return await apiClient.get<APIResponse<TopStock[]>>(`/limitup/top/${date}`);
 }
 
+export async function getEmotionTrend(date: string) {
+  return await apiClient.get<APIResponse<Array<Array<any>>>>(`/emotion-trend/${date}`);
+}
+
 export async function downloadOneDay(date: string) {
   return await apiClient.post<APIResponse<{}>>('/hangqing/', {
     start: date,

@@ -120,6 +120,9 @@
         <LineChart :date="formattedDate" />
       </el-col>
     </el-row>
+    <div>
+      <EmotionTrendChart :date="formattedDate" />
+    </div>
   </div>
 </template>
 
@@ -137,6 +140,7 @@ import {
 import BoardReview from './BoardReview.vue'
 import LineChart from './charts/LineChart.vue'
 import TrendChart from './charts/TrendChart.vue'
+import EmotionTrendChart from './charts/EmotionTrendChart.vue'
 import TopStocks from './TopStocks.vue'
 import 'dayjs/locale/zh-cn'
 import { getEastmoneyLink } from '@/utils/stocks'

@@ -2,6 +2,7 @@
 复盘服务.
 """
 import re
+from collections import defaultdict
 from crawlers.db.connector import getConnection
 from aimodels.utils.logger import get_logger
 
@@ -220,3 +221,66 @@ def get_high_days(high_days_str: str):
         if len(numbers) == 2 and int(numbers[1]) > high:
             high_days = p
     return high_days
+
+def get_emotion_trend(date: str):
+    """
+    获取过去30个交易日的情绪变化趋势.
+    """
+    query = ("SELECT DATE_FORMAT(date, '%Y%m%d') as `date`, continue_num as continue_num, COUNT(*) as limit_up_count "
+        "FROM smartrade.limit_up_ladder lul  "
+        "WHERE `date` >= %s - INTERVAL 60 DAY AND `date` <= %s "
+        "GROUP BY `date`,continue_num "
+        "UNION "
+        "SELECT DATE_FORMAT(date, '%Y%m%d') as `date`, 0 as continue_num, COUNT(*) as limit_up_count "
+        "FROM smartrade.limit_up_stocks lus "
+        "WHERE `date` >= %s - INTERVAL 60 DAY AND `date` <= %s "
+        "GROUP BY `date` "
+        "ORDER BY `date` DESC, continue_num DESC;"
+    )
+    try:
+        with getConnection() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(query, (date, date, date, date))
+                result = cursor.fetchall()
+                dataset = [
+                    {
+                        "date": x[0],
+                        "height": x[1],
+                        "count": x[2]
+                    } for x in result
+                ]
+                # Initialize a defaultdict to organize data by date.
+                organized_data = defaultdict(lambda: [0] * 20)
+
+                # Process each entry in the input data.
+                for entry in dataset:
+                    date = entry['date']
+                    height = entry['height']
+                    count = entry['count']
+                    organized_data[date][height] = count
+
+                # Convert organized data into the desired format.
+                result = []
+                for date, counts in sorted(organized_data.items()):
+                    counts[1] = counts[0] - sum(counts[2:])
+                    row = [date] + counts
+                    result.append(row)
+                
+                # 计算连板晋级率
+                upRatio = []
+                for i in range(0, len(result) - 1):
+                    day1 = result[i][2:]
+                    day2 = result[i + 1][2:]
+                    ratio = []
+                    for j in range(0, len(day1) - 1):
+                        r = round(100 * day2[j + 1] / day1[j], 2) if day1[j] != 0 else '-'
+                        print(r)
+                        ratio.append(r)
+                    upRatio.append([result[i + 1][0], *ratio])
+                # Print the output.
+                return upRatio
+    except Exception as ex:
+        log.error(ex)
+
+if __name__ == '__main__':
+    get_emotion_trend('20241215')

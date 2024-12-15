@@ -16,7 +16,8 @@ from aimodels.services.review import (
     get_latest_date, 
     get_limit_up_down_trend,
     get_top_stocks,
-    get_top_block_details)
+    get_top_block_details,
+    get_emotion_trend)
 from aimodels.services.pattern import (
     get_reversal_stocks,
     get_break_stocks
@@ -136,6 +137,15 @@ async def limit_up_top_stocks(date):
         msg="操作成功"
     )
 
+@app.get("/emotion-trend/{date}", description="市场情绪趋势")
+async def emotion_treand(date):
+    log.info(f"查询人气趋势 {date}")
+    results = get_emotion_trend(date)
+    return HttpResp(
+        code=200,
+        data=results,
+        msg="操作成功"
+    )
 
 @app.get("/rank/", description="东方财富实时人气排名")
 async def rank():
