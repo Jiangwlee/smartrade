@@ -222,6 +222,61 @@ def get_high_days(high_days_str: str):
             high_days = p
     return high_days
 
+def get_zdt_stats_by_tag(date: str, tag: str):
+    """
+    获取过去30个交易日的涨跌停统计.
+    """
+    query = (
+        "SELECT DATE_FORMAT(`date`, '%Y%m%d'), tag, COUNT(*), GROUP_CONCAT(name) "
+        "FROM zdt_hangqing zh "
+        "WHERE tag = %s AND `date` >= %s - INTERVAL 60 DAY AND `date` <= %s "
+        "GROUP BY `date`"
+    )
+    try:
+        with getConnection() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(query, (tag, date, date))
+                result = cursor.fetchall()
+                dates = [x[0] for x in result]
+                dates = dates[-30:]
+                result = [x for x in result if x[0] in dates]
+                return result
+    except Exception as ex:
+        log.error(ex)
+
+def get_zdt_stats(date: str):
+    yz = get_zdt_stats_by_tag(date, '一字板')
+    tz = get_zdt_stats_by_tag(date, 'T字板')
+    td = get_zdt_stats_by_tag(date, '天地板')
+    dt = get_zdt_stats_by_tag(date, '地天板')
+    zt = get_zdt_stats_by_tag(date, '涨停')
+    result = {}
+    for item in zt:
+        result[item[0]] = {
+            'date': item[0],
+            '涨停': item[2],
+            '一字板': 0,
+            'T字板': 0,
+            '天地板': 0,
+            '地天板': 0,
+            '天地板股票': '',
+            '地天板股票': ''
+        }
+    for item in yz:
+        result[item[0]]['一字板'] = item[2]
+    for item in tz:
+        if item[0] in result:
+            result[item[0]]['T字板'] = item[2]
+    for item in td:
+        if item[0] in result:
+            result[item[0]]['天地板'] = item[2]
+            result[item[0]]['天地板股票'] = item[3]
+    for item in dt:
+        if item[0] in result:
+            result[item[0]]['地天板'] = item[2]
+            result[item[0]]['地天板股票'] = item[3]
+    return list(result.values())
+
 def get_emotion_trend(date: str):
     """
     获取过去30个交易日的情绪变化趋势.
@@ -235,7 +290,7 @@ def get_emotion_trend(date: str):
         "FROM smartrade.limit_up_stocks lus "
         "WHERE `date` >= %s - INTERVAL 60 DAY AND `date` <= %s "
         "GROUP BY `date` "
-        "ORDER BY `date` DESC, continue_num DESC;"
+        "ORDER BY `date` DESC, continue_num DESC "
     )
     try:
         with getConnection() as connection:
@@ -278,9 +333,122 @@ def get_emotion_trend(date: str):
                         ratio.append(r)
                     upRatio.append([result[i + 1][0], *ratio])
                 # Print the output.
-                return upRatio
+                return upRatio[-30:]
+    except Exception as ex:
+        log.error(ex)
+
+def get_emotion_index(date: str, n: int):
+    """
+    获取情绪指标.
+    """
+    query_tdb = (
+        "SELECT COUNT(*), GROUP_CONCAT(name) "
+        "FROM zdt_hangqing "
+        "WHERE date = %s AND tag = '天地板' "
+    )
+    query_dtb = (
+        "SELECT COUNT(*), GROUP_CONCAT(name) "
+        "FROM zdt_hangqing "
+        "WHERE date = %s AND tag = '地天板' "
+    )
+    query_height = (
+        "SELECT continue_num, COUNT(*), GROUP_CONCAT(name) "
+        "FROM limit_up_ladder lul "
+        "WHERE `date` = %s "
+        "GROUP BY continue_num "
+        "ORDER BY continue_num DESC "
+        "LIMIT 1 "
+    )
+    query_limit_down = (
+        "SELECT `date`, COUNT(*), GROUP_CONCAT(name) "
+        "FROM limit_down_stocks lds "
+        "WHERE `date` <= %s " 
+        "GROUP BY `date` "
+        "ORDER BY `date` DESC "
+        "LIMIT 2"
+    )
+    query_limit_up = (
+        "SELECT COUNT(*)"
+        " FROM limit_up_ladder lul"
+        " WHERE `date` = %s "
+    )
+    
+    dates = get_last_N_trade_dates(n, date)
+    result_list = []
+    try:
+        for d in dates:
+            ret = {
+                "date": d,
+                "tdb_count": 0, # 天地板数量
+                "tdb_stock": '', # 天地板个股
+                "height": 0, # 连板高度
+                "height_stock": '', # 最高连板股票
+                "dt_count": 0, # 跌停数量
+                "dt_continue_count": 0, # 连续跌停
+                "dt_continue_stock": '', # 连续跌停个股
+                "zt_continue_count": 0, # 连板数量
+                "dtb_count": 0, # 地天板数量
+                "dtb_stock": '', # 地天板个股
+            }
+            with getConnection() as connection:
+                with connection.cursor() as cursor:
+                    cursor.execute(query_tdb, (d,))
+                    result = cursor.fetchall()
+                    if len(result) > 0:
+                        ret["tdb_count"] = result[0][0]
+                        ret["tdb_stock"] = result[0][1] if result[0][0] > 0 else ''
+
+                    cursor.execute(query_dtb, (d,))
+                    result = cursor.fetchall()
+                    if len(result) > 0:
+                        ret["dtb_count"] = result[0][0]
+                        ret["dtb_stock"] = result[0][1] if result[0][0] > 0 else ''
+
+                    # 查询连板高度
+                    cursor.execute(query_height, (d,))
+                    result = cursor.fetchall()
+                    if len(result) > 0:
+                        ret["height"] = result[0][0]
+                        ret["height_stock"] = result[0][2]
+
+                    # 查询跌停信息
+                    cursor.execute(query_limit_down, (d,))
+                    result = cursor.fetchall()
+                    if len(result) > 1:
+                        ret["dt_count"] = result[0][1]
+                        cur_dt = result[0][2].split(',')
+                        prev_dt = result[1][2].split(',')
+                        intersection_list = list(set(cur_dt) & set(prev_dt))
+                        ret["dt_continue_count"] = len(intersection_list)
+                        ret["dt_continue_stock"] = ','.join(intersection_list)
+
+                    # 查询连板个股
+                    cursor.execute(query_limit_up, (d,))
+                    result = cursor.fetchall()
+                    if len(result) > 0:
+                        ret["zt_continue_count"] = result[0][0]
+            result_list.append(ret)
+        return(result_list)
+    except Exception as ex:
+        log.error(ex)
+
+def get_last_N_trade_dates(num: int, date: str):
+    query = (
+        "SELECT DISTINCT `date` "
+        "FROM limit_up_ladder lul "
+        "WHERE `date` <= %s "
+        "ORDER BY `date` DESC "
+        "LIMIT %s "
+    )
+    try:
+        with getConnection() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(query, (date, num))
+                dates = [x[0].strftime("%Y%m%d") for x in cursor.fetchall()]
+                dates.reverse()
+                return dates
     except Exception as ex:
         log.error(ex)
 
 if __name__ == '__main__':
-    get_emotion_trend('20241215')
+    get_emotion_index('20241216')

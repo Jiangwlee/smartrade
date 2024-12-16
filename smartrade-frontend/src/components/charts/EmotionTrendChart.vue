@@ -58,7 +58,7 @@ const datasource = [
 ]
 const option = ref<EChartsOption>({
   title: {
-    text: '市场情绪趋势',
+    text: '晋级率趋势',
     left: 'center',
   },
   dataset: {
@@ -66,9 +66,8 @@ const option = ref<EChartsOption>({
   },
   legend: {
     // Try 'horizontal'
-    orient: 'vertical',
-    right: 10,
-    top: 'center',
+    orient: 'horizontal',
+    top: 30,
     selected: {
       '1进2': true, // 默认显示
       '2进3': true, // 默认显示
@@ -113,13 +112,13 @@ const option = ref<EChartsOption>({
       name: '1进2',
       type: 'line',
       connectNulls: false,
-      symbolSize: (value) => { return value[1] > 40 ? 20 : 4;}
+      symbolSize: (value) => { return value[1] > 40 ? 10 : 4;}
     },
     {
       name: '2进3',
       type: 'line',
       connectNulls: false,
-      symbolSize: (value) => { return value[2] > 40 ? 20 : 4;}
+      symbolSize: (value) => { return value[2] > 40 ? 10 : 4;}
     },
     {
       name: '3进4',

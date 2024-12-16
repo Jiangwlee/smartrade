@@ -17,7 +17,9 @@ from aimodels.services.review import (
     get_limit_up_down_trend,
     get_top_stocks,
     get_top_block_details,
-    get_emotion_trend)
+    get_emotion_trend,
+    get_emotion_index,
+    get_zdt_stats)
 from aimodels.services.pattern import (
     get_reversal_stocks,
     get_break_stocks
@@ -137,13 +139,33 @@ async def limit_up_top_stocks(date):
         msg="操作成功"
     )
 
-@app.get("/emotion-trend/{date}", description="市场情绪趋势")
+@app.get("/emotion/trend/{date}", description="市场情绪趋势")
 async def emotion_treand(date):
-    log.info(f"查询人气趋势 {date}")
+    log.info(f"查询情绪趋势 {date}")
     results = get_emotion_trend(date)
     return HttpResp(
         code=200,
         data=results,
+        msg="操作成功"
+    )
+
+@app.get("/emotion/index/{date}", description="市场情绪指标")
+async def emotion_index(date):
+    log.info(f"查询情绪指标 {date}")
+    results = get_emotion_index(date, 30)
+    return HttpResp(
+        code=200,
+        data=results,
+        msg="操作成功"
+    )
+
+@app.get("/emotion/overview/{date}", description="市场情绪概览")
+async def emotion_index(date):
+    log.info(f"查询情绪指标 {date}")
+    results = get_emotion_index(date, 1)
+    return HttpResp(
+        code=200,
+        data=results[0],
         msg="操作成功"
     )
 
@@ -164,6 +186,16 @@ async def download(date: DatePair):
     return HttpResp(
         code=200,
         data={},
+        msg="操作成功"
+    )
+
+@app.get("/stats/zdt/{date}", description="涨跌停统计")
+async def zdt_stats(date):
+    log.info(f"涨跌停统计 {date}")
+    result = get_zdt_stats(date)
+    return HttpResp(
+        code=200,
+        data=result,
         msg="操作成功"
     )
 

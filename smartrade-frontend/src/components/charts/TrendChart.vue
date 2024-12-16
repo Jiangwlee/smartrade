@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { use } from 'echarts/core'
 import { BarChart } from 'echarts/charts'
 import {
@@ -20,6 +20,7 @@ import type {
   GridComponentOption,
 } from 'echarts/components'
 import VChart, { THEME_KEY } from 'vue-echarts'
+import { getLimitUpDownTrend } from '@/services/requests'
 
 use([
   TooltipComponent,
@@ -37,12 +38,25 @@ type EChartsOption = ComposeOption<
 >
 
 const props = defineProps<{
-  source: Array<Array<string | number>>
+  date: string
 }>()
 
-const option = computed<EChartsOption>(() => ({
+const source = ref<Array<Array<string | number>>>([])
+
+const fetchData = async () => {
+  getLimitUpDownTrend(props.date).then((resp) => {
+    source.value = resp.data.data
+  })
+  console.log(source.value)
+}
+
+const option = ref<EChartsOption>({
+  title: {
+    text: '每日涨跌停趋势',
+    left: 'center',
+  },
   dataset: {
-    source: props.source,
+    source: source,
   },
   tooltip: {
     trigger: 'axis',
@@ -55,6 +69,7 @@ const option = computed<EChartsOption>(() => ({
     },
   },
   legend: {
+    top: 30,
     data: ['涨停', '跌停'],
   },
   grid: {
@@ -121,7 +136,12 @@ const option = computed<EChartsOption>(() => ({
       },
     },
   ],
-}))
+})
+
+onMounted(() => {
+  console.log("TrendChart is Mounted")
+  fetchData()
+})
 </script>
 
 <style scoped>

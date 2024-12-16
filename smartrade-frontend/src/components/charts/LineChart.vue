@@ -28,13 +28,17 @@ type EChartsOption = ComposeOption<
 >
 
 
-provide(THEME_KEY, 'dark')
+// provide(THEME_KEY, 'dark')
 
 const props = defineProps<{
   date: string
 }>()
 
 const option = ref<EChartsOption>({
+  title: {
+    text: '连板高度趋势',
+    left: 'center',
+  },
   dataset: {
     dimensions: ['date', 'continuous_num', 'stocks'],
     source: [

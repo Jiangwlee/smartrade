@@ -48,6 +48,7 @@ class Downloader:
             # 获取上一个交易日的涨停板列表, 并抓取今日的竞价行情
             limit_up_code_list = [(x[4], x[5]) for x in LimitUpDao().getItemsByDate(prev_date)]
             self.__crawl_hang_qing(cur_date, limit_up_code_list)
+            self.__crawl_day_hang_qing(cur_date, limit_up_code_list)
 
     def __crawl_hang_qing(self, date: str, code_list: list):
         result = []
@@ -83,6 +84,7 @@ class Downloader:
             spider = HangQingCrawler(item[0], item[1], date, HangQingType.DAY, 1)
             result = spider.crawl()
             records.append(result[0])
+        print(records)
         if len(records) == 0:
             log.warning("未抓取到任何【涨跌停行情】数据.")
         elif self.save_to_db:
@@ -91,5 +93,5 @@ class Downloader:
             dao.insert(date, records)
 
 if __name__ == '__main__':
-    downloader = Downloader('20240913', '20240913', save_to_db=False)
+    downloader = Downloader('20241216', '20241216', save_to_db=True)
     downloader.run()

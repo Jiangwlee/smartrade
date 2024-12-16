@@ -20,11 +20,58 @@
       </el-col>
     </el-row>
 
+    <el-row>
+      <BoardReview :date="formattedDate" />
+    </el-row>
+
     <el-row :gutter="20">
       <el-col :span="12">
-        <TrendChart :source="limitUpDownTrend" />
+        <EmotionReview :date="formattedDate" />
+        <!-- <TrendChart :source="limitUpDownTrend" /> -->
       </el-col>
       <el-col :span="12">
+        <div>
+          <el-table
+            :data="reviewData.ladder"
+            style="width: 100%"
+            header-row-class-name="review-header"
+          >
+            <el-table-column
+              prop="height"
+              label="连板高度"
+              class-name="height-col"
+              width="80"
+            >
+              <template #default="scope">
+                <el-badge :value="scope.row.stocks.length" class="badge-item">
+                  <el-button size="small">{{ scope.row.height }}</el-button>
+                </el-badge>
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="stocks"
+              label="连板股票"
+              class-name="stock-col"
+            >
+              <template #default="scope">
+                <div class="flex-gap">
+                  <el-tag
+                    type="primary"
+                    v-for="item in scope.row.stocks"
+                    :class="stockCodeStyle(item.code)"
+                  >
+                    <div style="display: flex; align-items: center">
+                      <a :href="getEastmoneyLink(item.code)" target="_blank">{{
+                        item.name
+                      }}</a>
+                    </div>
+                  </el-tag>
+                </div>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+        <el-divider />
         <el-card>
           <template #header>
             <div class="card-title">
@@ -70,59 +117,12 @@
         <TopStocks :date="formattedDate" />
       </el-col>
     </el-row>
-    <el-row>
-      <BoardReview :date="formattedDate" />
-    </el-row>
+
     <el-row :gutter="20">
       <el-col :span="12" justify="start">
-        <el-table
-          :data="reviewData.ladder"
-          style="width: 100%"
-          header-row-class-name="review-header"
-        >
-          <el-table-column
-            prop="height"
-            label="连板高度"
-            class-name="height-col"
-            width="80"
-          >
-            <template #default="scope">
-              <el-badge :value="scope.row.stocks.length" class="badge-item">
-                <el-button size="small">{{ scope.row.height }}</el-button>
-              </el-badge>
-            </template>
-          </el-table-column>
-          <el-table-column
-            prop="stocks"
-            label="连板股票"
-            class-name="stock-col"
-          >
-            <template #default="scope">
-              <div class="flex-gap">
-                <el-tag
-                  type="primary"
-                  v-for="item in scope.row.stocks"
-                  :class="stockCodeStyle(item.code)"
-                >
-                  <div style="display: flex; align-items: center">
-                    <a :href="getEastmoneyLink(item.code)" target="_blank">{{
-                      item.name
-                    }}</a>
-                  </div>
-                </el-tag>
-              </div>
-            </template>
-          </el-table-column>
-        </el-table>
-      </el-col>
-      <el-col :span="12" justify="start">
-        <!-- <ContinuousLimitUpChart /> -->
-        <LineChart :date="formattedDate" />
+        
       </el-col>
     </el-row>
-    <div>
-      <EmotionTrendChart :date="formattedDate" />
-    </div>
   </div>
 </template>
 
@@ -137,10 +137,13 @@ import {
   getReversalStocks,
   getBreakStocks
 } from '@/services/requests'
+import EmotionReview from './EmotionReview.vue'
 import BoardReview from './BoardReview.vue'
 import LineChart from './charts/LineChart.vue'
 import TrendChart from './charts/TrendChart.vue'
 import EmotionTrendChart from './charts/EmotionTrendChart.vue'
+import EmotionIndexChart from './charts/EmotionIndexChart.vue'
+import ZdtTrendChart from './charts/ZdtTrendChart.vue'
 import TopStocks from './TopStocks.vue'
 import 'dayjs/locale/zh-cn'
 import { getEastmoneyLink } from '@/utils/stocks'

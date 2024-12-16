@@ -95,3 +95,17 @@ export type TopStock = {
   first: string,
   duration: number
 }
+
+export type EmotionInfo = {
+  date: string,
+  tdb_count: number,
+  tdb_stock: string,
+  height: number,
+  height_stock: string,
+  dt_count: number,
+  dt_continue_count: number,
+  dt_continue_stock: string,
+  zt_continue_count: number,
+  dtb_count: number,
+  dtb_stock: string,
+}

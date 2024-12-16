@@ -1,5 +1,5 @@
 import apiClient from "./api";
-import type { APIResponse, Prediction, LimitUpDetail, LimitUpLadder, StockRankInfo, Evaluation, LimitUpLeadingStock, BoardDetails, TopStock } from "./types";
+import type { APIResponse, Prediction, LimitUpDetail, LimitUpLadder, StockRankInfo, Evaluation, LimitUpLeadingStock, BoardDetails, TopStock, EmotionInfo } from "./types";
 
 export async function getEvaluation(date: string) {
   return await apiClient.get<APIResponse<Evaluation[]>>(`evaluation/${date}`);
@@ -44,7 +44,19 @@ export async function getTopStocks(date: string) {
 }
 
 export async function getEmotionTrend(date: string) {
-  return await apiClient.get<APIResponse<Array<Array<any>>>>(`/emotion-trend/${date}`);
+  return await apiClient.get<APIResponse<Array<Array<any>>>>(`/emotion/trend/${date}`);
+}
+
+export async function getEmotionIndex(date: string) {
+  return await apiClient.get<APIResponse<Array<object>>>(`/emotion/index/${date}`);
+}
+
+export async function getEmotionOverview(date: string) {
+  return await apiClient.get<APIResponse<EmotionInfo>>(`/emotion/overview/${date}`);
+}
+
+export async function getZdtTrend(date: string) {
+  return await apiClient.get<APIResponse<Array<object>>>(`/stats/zdt/${date}`);
 }
 
 export async function downloadOneDay(date: string) {
