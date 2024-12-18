@@ -329,7 +329,6 @@ def get_emotion_trend(date: str):
                     ratio = []
                     for j in range(0, len(day1) - 1):
                         r = round(100 * day2[j + 1] / day1[j], 2) if day1[j] != 0 else '-'
-                        print(r)
                         ratio.append(r)
                     upRatio.append([result[i + 1][0], *ratio])
                 # Print the output.

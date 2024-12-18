@@ -1,8 +1,15 @@
+from decimal import Decimal, ROUND_HALF_UP
+
+def my_round(value):
+    num = Decimal(str(value))
+    result = num.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+    return float(result)
+
 def round_price(price: int):
     """
     将金融界的整数价格变成浮点数.
     """
-    return round(price / 10000, 2)
+    return my_round(price / 10000)
 
 def tag_stock(code: str, open: int, close: int, pre_close: int, high: int, low:int):
     open = round_price(open)
@@ -15,8 +22,8 @@ def tag_stock(code: str, open: int, close: int, pre_close: int, high: int, low:i
         rate = 0.3
     elif code.startswith('3') or code.startswith('68'):
         rate = 0.2
-    zt_price = round((pre_close * (1 + rate)), 2)
-    dt_price = round((pre_close * (1 - rate)), 2)
+    zt_price = my_round(pre_close * (1 + rate))
+    dt_price = my_round(pre_close * (1 - rate))
     if zt_price == high and dt_price == close:
         return '天地板'
     if dt_price == low and zt_price == close:

@@ -10,7 +10,7 @@
       <el-tooltip v-for="item in tdbStocks" :content="item" placement="top">
         <el-button :key="item" class="danger">天<br/>地</el-button>
       </el-tooltip>
-      <el-button v-for="n in dailyInfo['dt_count'] / 5" :key="n" :icon="Download" circle class="warning" />
+      <el-button v-for="n in Math.ceil(dailyInfo['dt_count'] / 5)" :key="n" :icon="Download" circle class="warning" />
     </div>
     <el-divider />
     <div class="chart-wrapper">
@@ -66,10 +66,16 @@ const dailyInfo = ref<EmotionInfo>({
 })
 
 const dtbStocks = computed(() => {
+  if (dailyInfo.value['dtb_count'] == 0) {
+    return []
+  }
   return dailyInfo.value['dtb_stock'].split(",");
 })
 
 const tdbStocks = computed(() => {
+  if (dailyInfo.value['tdb_count'] == 0) {
+    return []
+  }
   return dailyInfo.value['tdb_stock'].split(",");
 })
 

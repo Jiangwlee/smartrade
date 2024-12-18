@@ -93,5 +93,5 @@ class Downloader:
             dao.insert(date, records)
 
 if __name__ == '__main__':
-    downloader = Downloader('20241216', '20241216', save_to_db=True)
+    downloader = Downloader('20241217', '20241217', save_to_db=True)
     downloader.run()
