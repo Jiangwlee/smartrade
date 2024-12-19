@@ -1,5 +1,5 @@
 import apiClient from "./api";
-import type { APIResponse, Prediction, LimitUpDetail, LimitUpLadder, StockRankInfo, Evaluation, LimitUpLeadingStock, BoardDetails, TopStock, EmotionInfo } from "./types";
+import type { APIResponse, Prediction, LimitUpDetail, LimitUpLadder, StockRankInfo, Evaluation, LimitUpLeadingStock, BoardDetails, TopStock, EmotionInfo, LonghuItem, LonghuInfo } from "./types";
 
 export async function getEvaluation(date: string) {
   return await apiClient.get<APIResponse<Evaluation[]>>(`evaluation/${date}`);
@@ -59,6 +59,10 @@ export async function getZdtTrend(date: string) {
   return await apiClient.get<APIResponse<Array<object>>>(`/stats/zdt/${date}`);
 }
 
+export async function getLonghuStats(date:string) {
+  return await apiClient.get<APIResponse<LonghuInfo>>(`/stats/longhu/${date}`);
+}
+
 export async function downloadOneDay(date: string) {
   return await apiClient.post<APIResponse<{}>>('/hangqing/', {
     start: date,
@@ -77,5 +81,3 @@ export async function getReversalStocks() {
 export async function getBreakStocks() {
   return await apiClient.get<APIResponse<Array<Array<string>>>>('/pattern/break');
 }
-
-

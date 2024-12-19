@@ -115,13 +115,12 @@
         </el-card>
         <el-divider />
         <TopStocks :date="formattedDate" />
+        <el-divider />
+        <LonghuStats :date="formattedDate" />
       </el-col>
     </el-row>
 
     <el-row :gutter="20">
-      <el-col :span="12" justify="start">
-        
-      </el-col>
     </el-row>
   </div>
 </template>
@@ -139,11 +138,7 @@ import {
 } from '@/services/requests'
 import EmotionReview from './EmotionReview.vue'
 import BoardReview from './BoardReview.vue'
-import LineChart from './charts/LineChart.vue'
-import TrendChart from './charts/TrendChart.vue'
-import EmotionTrendChart from './charts/EmotionTrendChart.vue'
-import EmotionIndexChart from './charts/EmotionIndexChart.vue'
-import ZdtTrendChart from './charts/ZdtTrendChart.vue'
+import LonghuStats from './LonghuStats.vue'
 import TopStocks from './TopStocks.vue'
 import 'dayjs/locale/zh-cn'
 import { getEastmoneyLink } from '@/utils/stocks'

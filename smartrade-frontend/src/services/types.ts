@@ -109,3 +109,25 @@ export type EmotionInfo = {
   dtb_count: number,
   dtb_stock: string,
 }
+
+export type LonghuStockInfo = {
+  branchName: string;
+  stockName: string;
+  chngPct: number;
+  bvalue: number;
+  svalue: number;
+  netvalue: number;
+};
+
+export type LonghuItem = {
+  name: string;
+  bvalue: number;
+  svalue: number;
+  netvalue: number;
+  stocks: LonghuStockInfo[];
+};
+
+export type LonghuInfo = {
+  date: string;
+  items: LonghuItem[]
+}

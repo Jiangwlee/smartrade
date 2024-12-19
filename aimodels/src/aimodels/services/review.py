@@ -2,22 +2,26 @@
 复盘服务.
 """
 import re
+from datetime import datetime
 from collections import defaultdict
 from crawlers.db.connector import getConnection
+from crawlers.jrj.longhu import LonghuCrawler
+from crawlers.jrj.dto import LongHuInfo
 from aimodels.utils.logger import get_logger
 
 log = get_logger()
 
-def get_latest_date():
+def get_latest_date(date: str):
     query = (
         "SELECT DATE_FORMAT(date, '%Y%m%d') "
         "FROM smartrade.limit_up_ladder lul "
+        "WHERE `date` <= %s "
         "ORDER BY date DESC "
         "LIMIT 1;")
     try:
         with getConnection() as connection:
             with connection.cursor() as cursor:
-                cursor.execute(query)
+                cursor.execute(query, (date, ))
                 result = cursor.fetchall()
                 return result[0][0]
     except Exception as ex:
@@ -449,5 +453,44 @@ def get_last_N_trade_dates(num: int, date: str):
     except Exception as ex:
         log.error(ex)
 
+def get_longhu_stats(date: str):
+    """
+    龙虎榜统计
+    """
+    longhuList = LonghuCrawler().crawl()
+    result = {
+        "date": '',
+        "items": []
+    }
+    datestr = get_latest_date(date)
+    result['date'] = datestr
+    date = datetime.strptime(datestr, "%Y%m%d").date()
+    for longhu in longhuList:
+        result['items'].append(longhu_summarize(longhu, date))
+    return result
+
+def longhu_summarize(longhu: LongHuInfo, date: datetime.date):
+    name = longhu.name
+    summary = {
+        'name': name, 'bvalue': 0, 'svalue': 0, 'netvalue':0, 'stocks': []
+    }
+    for item in longhu.items:
+        if item.enddate != date:
+            continue
+        summary['bvalue'] += item.bvalue
+        summary['svalue'] += item.svalue
+        summary['netvalue'] += item.netvalue
+        summary['stocks'].append({
+            'branchName': item.branchName,
+            'stockName': item.stockname,
+            'chngPct': item.chngPct,
+            'bvalue': item.bvalue,
+            'svalue': item.svalue,
+            'netvalue': item.netvalue
+        })
+    return summary
+
+
 if __name__ == '__main__':
-    get_emotion_index('20241216')
+    result = get_longhu_stats('20241219')
+    print(result)

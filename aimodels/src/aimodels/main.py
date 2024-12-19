@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse, PlainTextResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -19,7 +20,8 @@ from aimodels.services.review import (
     get_top_block_details,
     get_emotion_trend,
     get_emotion_index,
-    get_zdt_stats)
+    get_zdt_stats,
+    get_longhu_stats)
 from aimodels.services.pattern import (
     get_reversal_stocks,
     get_break_stocks
@@ -199,6 +201,16 @@ async def zdt_stats(date):
         msg="操作成功"
     )
 
+@app.get("/stats/longhu/{date}", description="龙虎榜统计")
+async def longhu_stats(date):
+    log.info(f"龙虎榜统计 {date}")
+    result = get_longhu_stats(date)
+    return HttpResp(
+        code=200,
+        data=result,
+        msg="操作成功"
+    )
+
 @app.get("/pattern/reversal", description="今日反包股票")
 async def reversal():
     log.info(f"查询今日反包股票")
@@ -220,7 +232,7 @@ async def break_stocks():
     )
 
 def validate_date(date: str):
-    result = get_latest_date()
+    result = get_latest_date(datetime.today())
     log.info(f"最近涨停日期: {result}")
     if result != None and len(result) > 0:
         if date > result:

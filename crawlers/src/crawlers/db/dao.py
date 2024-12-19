@@ -238,6 +238,23 @@ class ZdtHangQingkDao(BaseDao):
         except Exception as ex:
             log.error(ex)
 
+class BrokerBranchDao:
+    """
+    券商营业部数据访问层.
+    """
+    def __init__(self):
+        self._table = "broker_branch"
+
+    def fetch_all(self):
+        query = (f"SELECT branch_code, branch_name, name FROM {self._table}")
+        try:
+            with getConnection() as connection:
+                with connection.cursor() as cursor:
+                    cursor.execute(query)
+                    return cursor.fetchall()
+        except Exception as ex:
+            log.error(ex)
+
 if __name__ == '__main__':
     from crawlers.jrj.hangqing import HangQingCrawler, HangQingType
     from crawlers.utils.dateutil import get_last_N_trade_date
