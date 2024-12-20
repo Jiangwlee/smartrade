@@ -15,6 +15,7 @@
 
           <el-button type="primary" size="small" :onclick="download">下载行情</el-button>
           <el-button type="primary" size="small" :onclick="topOfHistory">历史新高</el-button>
+          <el-button type="primary" size="small" :onclick="eastmoneyRank">东财人气榜</el-button>
         </el-space>
       </el-col>
     </el-row>
@@ -203,6 +204,11 @@ const download = async () => {
 
 const topOfHistory = () => {
   const targetUrl = 'http://data.10jqka.com.cn/rank/cxg/###';
+  window.open(targetUrl, "_blank");
+}
+
+const eastmoneyRank = () => {
+  const targetUrl = 'https://guba.eastmoney.com/rank/';
   window.open(targetUrl, "_blank");
 }
 
