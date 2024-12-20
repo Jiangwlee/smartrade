@@ -13,9 +13,8 @@
             size="small"
           />
 
-          <el-button type="primary" size="small" :onclick="download"
-            >下载行情</el-button
-          >
+          <el-button type="primary" size="small" :onclick="download">下载行情</el-button>
+          <el-button type="primary" size="small" :onclick="topOfHistory">历史新高</el-button>
         </el-space>
       </el-col>
     </el-row>
@@ -200,6 +199,11 @@ const download = async () => {
         type: 'error',
       })
     })
+}
+
+const topOfHistory = () => {
+  const targetUrl = 'http://data.10jqka.com.cn/rank/cxg/###';
+  window.open(targetUrl, "_blank");
 }
 
 const disabledDate = (time: Date) => {
