@@ -6,7 +6,7 @@ COPY crawlers/dist /workspace
 COPY aimodels/ /workspace
 
 RUN pip install crawlers-0.0.1-py3-none-any.whl && \
-    pip install -i https://pypi.tuna.tsinghua.edu.cn/simple "fastapi[standard]" pandas scikit-learn
+    pip install -i https://mirrors.aliyun.com/pypi/simple/ "fastapi[standard]" pandas scikit-learn
 
 WORKDIR /workspace/src/aimodels/
 

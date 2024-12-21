@@ -305,6 +305,8 @@ watch(pickedDate, (newVal, oldVal) => {
   if (newVal !== oldVal) {
     review()
     fetchLimitUpDownTrend()
+    getReversalPatternStocks()
+    getBreakPatternStocks()
     fetchBreakLossStats()
   }
 })
