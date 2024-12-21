@@ -1,5 +1,5 @@
 import apiClient from "./api";
-import type { APIResponse, Prediction, LimitUpDetail, LimitUpLadder, StockRankInfo, Evaluation, LimitUpLeadingStock, BoardDetails, TopStock, EmotionInfo, LonghuItem, LonghuInfo } from "./types";
+import type { APIResponse, Prediction, LimitUpDetail, LimitUpLadder, StockRankInfo, Evaluation, LimitUpLeadingStock, BoardDetails, TopStock, EmotionInfo, LonghuItem, LonghuInfo, BreakLossDataItem } from "./types";
 
 export async function getEvaluation(date: string) {
   return await apiClient.get<APIResponse<Evaluation[]>>(`evaluation/${date}`);
@@ -63,6 +63,10 @@ export async function getLonghuStats(date:string) {
   return await apiClient.get<APIResponse<LonghuInfo>>(`/stats/longhu/${date}`);
 }
 
+export async function getBreakLossStats(date:string) {
+  return await apiClient.get<APIResponse<BreakLossDataItem[]>>(`/stats/break_loss/${date}`);
+}
+
 export async function downloadOneDay(date: string) {
   return await apiClient.post<APIResponse<{}>>('/hangqing/', {
     start: date,
@@ -74,10 +78,10 @@ export async function getEastmoneyRank() {
   return await apiClient.get<APIResponse<StockRankInfo[]>>('/rank/');
 }
 
-export async function getReversalStocks() {
-  return await apiClient.get<APIResponse<Array<Array<string>>>>('/pattern/reversal');
+export async function getReversalStocks(date: string) {
+  return await apiClient.get<APIResponse<Array<Array<string>>>>(`/pattern/reversal/${date}`);
 }
 
-export async function getBreakStocks() {
-  return await apiClient.get<APIResponse<Array<Array<string>>>>('/pattern/break');
+export async function getBreakStocks(date: string) {
+  return await apiClient.get<APIResponse<Array<Array<string>>>>(`/pattern/break/${date}`);
 }

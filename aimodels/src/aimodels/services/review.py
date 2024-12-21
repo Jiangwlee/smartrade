@@ -7,7 +7,9 @@ from collections import defaultdict
 from crawlers.db.connector import getConnection
 from crawlers.jrj.longhu import LonghuCrawler
 from crawlers.jrj.dto import LongHuInfo
+from crawlers.utils.hqutil import tag_stock
 from aimodels.utils.logger import get_logger
+from aimodels.services.pattern import get_break_of_first_limitup_stocks, get_break_stocks
 
 log = get_logger()
 
@@ -16,6 +18,7 @@ def get_latest_date(date: str):
         "SELECT DATE_FORMAT(date, '%Y%m%d') "
         "FROM smartrade.limit_up_ladder lul "
         "WHERE `date` <= %s "
+        "GROUP BY date "
         "ORDER BY date DESC "
         "LIMIT 1;")
     try:
@@ -24,6 +27,23 @@ def get_latest_date(date: str):
                 cursor.execute(query, (date, ))
                 result = cursor.fetchall()
                 return result[0][0]
+    except Exception as ex:
+        log.error(ex)
+
+def get_latest_N_date(date: str, n: int):
+    query = (
+        "SELECT DATE_FORMAT(date, '%Y%m%d') "
+        "FROM smartrade.limit_up_ladder lul "
+        "WHERE `date` <= %s "
+        "GROUP BY date "
+        "ORDER BY date DESC "
+        "LIMIT %s;")
+    try:
+        with getConnection() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(query, (date, n,))
+                result = cursor.fetchall()
+                return [x[0] for x in result]
     except Exception as ex:
         log.error(ex)
 
@@ -376,7 +396,7 @@ def get_emotion_index(date: str, n: int):
         " WHERE `date` = %s "
     )
     
-    dates = get_last_N_trade_dates(n, date)
+    dates = get_latest_N_date(date, n)
     result_list = []
     try:
         for d in dates:
@@ -435,23 +455,23 @@ def get_emotion_index(date: str, n: int):
     except Exception as ex:
         log.error(ex)
 
-def get_last_N_trade_dates(num: int, date: str):
-    query = (
-        "SELECT DISTINCT `date` "
-        "FROM limit_up_ladder lul "
-        "WHERE `date` <= %s "
-        "ORDER BY `date` DESC "
-        "LIMIT %s "
-    )
-    try:
-        with getConnection() as connection:
-            with connection.cursor() as cursor:
-                cursor.execute(query, (date, num))
-                dates = [x[0].strftime("%Y%m%d") for x in cursor.fetchall()]
-                dates.reverse()
-                return dates
-    except Exception as ex:
-        log.error(ex)
+# def get_last_N_trade_dates(num: int, date: str):
+#     query = (
+#         "SELECT DISTINCT `date` "
+#         "FROM limit_up_ladder lul "
+#         "WHERE `date` <= %s "
+#         "ORDER BY `date` DESC "
+#         "LIMIT %s "
+#     )
+#     try:
+#         with getConnection() as connection:
+#             with connection.cursor() as cursor:
+#                 cursor.execute(query, (date, num))
+#                 dates = [x[0].strftime("%Y%m%d") for x in cursor.fetchall()]
+#                 dates.reverse()
+#                 return dates
+#     except Exception as ex:
+#         log.error(ex)
 
 def get_longhu_stats(date: str):
     """
@@ -490,7 +510,84 @@ def longhu_summarize(longhu: LongHuInfo, date: datetime.date):
         })
     return summary
 
+def get_break_loss_effect(date: str):
+    """
+    计算断板个股的亏钱效应.
+    """
+    lastest_N_date = get_latest_N_date(date, 10)
+    result = []
+    for curdate in lastest_N_date:
+        first_limitup_breaks = [x[0] for x in get_break_of_first_limitup_stocks(curdate)] # 首板断板个股
+        continue_limitup_breaks = [x[0] for x in get_break_stocks(curdate)] # 连板断板个股
+        first_limitup_loss = compute_loss_effect(first_limitup_breaks, curdate)
+        continue_limitup_loss = compute_loss_effect(continue_limitup_breaks, curdate)
+        result.append({
+            'date': curdate,
+            'first_limitup_loss': first_limitup_loss,
+            'continue_limitup_loss': continue_limitup_loss
+        })
+    return result
+
+def compute_loss_effect(stock_code_list, date):
+    """
+    Parameters:
+    - stock_code_list: 股票列表
+    - date: 行情日期
+    """
+    if len(stock_code_list) == 0:
+        return {
+                    'count': 0,
+                    'up': 0,
+                    'up_stocks': [],
+                    'down': 0,
+                    'down_stocks': [],
+                    'chg': 0,
+                    'max': 0,
+                    'min': 0,
+                }
+    
+    query = (
+        "SELECT code, name, pre_close_price, close_price "
+        "FROM zdt_hangqing zh "
+        f"WHERE code in {str(tuple(stock_code_list))} AND `date` = {date} "
+    )
+    try:
+        with getConnection() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(query)
+                result = cursor.fetchall()
+                stats = {
+                    'count': len(result),
+                    'up': 0,
+                    'up_stocks': [],
+                    'down': 0,
+                    'down_stocks': [],
+                    'chg': 0,
+                    'max': 0,
+                    'min': 0,
+                }
+
+                total = 0
+                for code, name, pre_close, close in result:
+                    chg = (close - pre_close) / pre_close
+                    total += chg
+                    if chg > 0:
+                        stats['up'] += 1
+                        stats['up_stocks'].append(name)
+                        if chg > stats['max']:
+                            stats['max'] = chg
+                    else:
+                        stats['down'] += 1
+                        stats['down_stocks'].append(name)
+                        if chg < stats['min']:
+                            stats['min'] = chg
+                stats['chg'] = round(total / len(result), 4)
+                stats['max'] = round(stats['max'], 4)
+                stats['min'] = round(stats['min'], 4)
+                return stats
+    except Exception as ex:
+        log.error(ex)
+
 
 if __name__ == '__main__':
-    result = get_longhu_stats('20241219')
-    print(result)
+    print('')

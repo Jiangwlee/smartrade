@@ -71,7 +71,46 @@
             </el-table-column>
           </el-table>
         </div>
-        <el-divider />
+        <el-divider class="card-divider"/>
+
+        <el-row :gutter="6">
+          <el-col :span="12">
+            <el-card>
+              <template #header>
+                <div class="card-title">
+                  <span>昨日首板断板</span>
+                </div>
+              </template>
+              <ul v-if="breakLossStats.length > 0" class="card-list">
+                <li>平均涨幅：{{ (breakLossStats[0].first_limitup_loss.chg * 100).toFixed(2) }}%</li>
+                <li>断板家数：{{ breakLossStats[0].first_limitup_loss.count }}</li>
+                <li>断板上涨：{{ breakLossStats[0].first_limitup_loss.up }}</li>
+                <li>断板下跌：{{ breakLossStats[0].first_limitup_loss.down }}</li>
+                <li>最大涨幅：{{ (breakLossStats[0].first_limitup_loss.max * 100).toFixed(2) }}%</li>
+                <li>最大跌幅：{{ (breakLossStats[0].first_limitup_loss.min * 100).toFixed(2) }}%</li>
+              </ul>
+            </el-card>
+          </el-col>
+          <el-col :span="12">
+            <el-card>
+              <template #header>
+                <div class="card-title">
+                  <span>昨日连板断板</span>
+                </div>
+              </template>
+              <ul v-if="breakLossStats.length > 0" class="card-list">
+                <li>平均涨幅：{{ (breakLossStats[0].continue_limitup_loss.chg * 100).toFixed(2)}}%</li>
+                <li>断板家数：{{ breakLossStats[0].continue_limitup_loss.count }}</li>
+                <li>断板上涨：{{ breakLossStats[0].continue_limitup_loss.up }}</li>
+                <li>断板下跌：{{ breakLossStats[0].continue_limitup_loss.down }}</li>
+                <li>最大涨幅：{{ (breakLossStats[0].continue_limitup_loss.max * 100).toFixed(2) }}%</li>
+                <li>最大跌幅：{{ (breakLossStats[0].continue_limitup_loss.min * 100).toFixed(2) }}%</li>
+              </ul>
+            </el-card>
+          </el-col>
+        </el-row>
+        <el-divider class="card-divider"/>
+
         <el-card>
           <template #header>
             <div class="card-title">
@@ -92,7 +131,7 @@
             </el-tag>
           </div>
         </el-card>
-        <el-divider />
+        <el-divider class="card-divider"/>
         <el-card>
           <template #header>
             <div class="card-title">
@@ -113,9 +152,9 @@
             </el-tag>
           </div>
         </el-card>
-        <el-divider />
+        <el-divider class="card-divider"/>
         <TopStocks :date="formattedDate" />
-        <el-divider />
+        <el-divider class="card-divider"/>
         <LonghuStats :date="formattedDate" />
       </el-col>
     </el-row>
@@ -128,13 +167,14 @@
 <script setup lang="ts">
 import { computed, watch, ref, onMounted } from 'vue'
 import { ElNotification } from 'element-plus'
-import type { LimitUpLadder } from '@/services/types'
+import { type BreakLossDataItem, type LimitUpLadder } from '@/services/types'
 import {
   downloadOneDay,
   getLimitUpLadder,
   getLimitUpDownTrend,
   getReversalStocks,
-  getBreakStocks
+  getBreakStocks,
+  getBreakLossStats
 } from '@/services/requests'
 import EmotionReview from './EmotionReview.vue'
 import BoardReview from './BoardReview.vue'
@@ -155,15 +195,24 @@ const reviewData = ref<ReviewData>({
 const limitUpDownTrend = ref<Array<Array<string | number>>>([])
 const reversalPatternStocks = ref<Array<Array<string>>>([])
 const breakPatternStocks = ref<Array<Array<string>>>([])
+const breakLossStats = ref<BreakLossDataItem[]>([])
+
+const fetchBreakLossStats = async () => {
+  getBreakLossStats(formattedDate.value).then(
+    (resp) => { 
+      breakLossStats.value = resp.data.data
+    }
+  )
+}
 
 const getReversalPatternStocks = async () => {
-  getReversalStocks().then(
+  getReversalStocks(formattedDate.value).then(
     (resp) => reversalPatternStocks.value = resp.data.data,
   )
 }
 
 const getBreakPatternStocks = async () => {
-  getBreakStocks().then(
+  getBreakStocks(formattedDate.value).then(
     (resp) => breakPatternStocks.value = resp.data.data,
   )
 }
@@ -256,6 +305,7 @@ watch(pickedDate, (newVal, oldVal) => {
   if (newVal !== oldVal) {
     review()
     fetchLimitUpDownTrend()
+    fetchBreakLossStats()
   }
 })
 
@@ -264,6 +314,7 @@ onMounted(() => {
   fetchLimitUpDownTrend()
   getReversalPatternStocks()
   getBreakPatternStocks()
+  fetchBreakLossStats()
 })
 </script>
 
@@ -336,5 +387,14 @@ onMounted(() => {
 .card-title {
     font-weight: bold;
     color: gray
+}
+
+.card-list {
+    text-align: left;
+}
+
+.card-divider {
+  // margin-top: 1px;
+  margin-bottom: 0px;
 }
 </style>

@@ -131,3 +131,27 @@ export type LonghuInfo = {
   date: string;
   items: LonghuItem[]
 }
+
+export type BreakLossDataItem = {
+  date: string;
+  first_limitup_loss: {
+      count: number;
+      up: number;
+      up_stocks: string[];
+      down: number;
+      down_stocks: string[];
+      chg: number;
+      max: number;
+      min: number;
+  };
+  continue_limitup_loss: {
+      count: number;
+      up: number;
+      up_stocks: string[];
+      down: number;
+      down_stocks: string[];
+      chg: number;
+      max: number;
+      min: number;
+  };
+};

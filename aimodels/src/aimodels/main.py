@@ -21,7 +21,8 @@ from aimodels.services.review import (
     get_emotion_trend,
     get_emotion_index,
     get_zdt_stats,
-    get_longhu_stats)
+    get_longhu_stats,
+    get_break_loss_effect)
 from aimodels.services.pattern import (
     get_reversal_stocks,
     get_break_stocks
@@ -211,20 +212,31 @@ async def longhu_stats(date):
         msg="操作成功"
     )
 
-@app.get("/pattern/reversal", description="今日反包股票")
-async def reversal():
-    log.info(f"查询今日反包股票")
-    results = get_reversal_stocks()
+
+@app.get("/stats/break_loss/{date}", description="断板亏钱效应")
+async def longhu_stats(date):
+    log.info(f"断板亏钱效应 {date}")
+    result = get_break_loss_effect(date)
+    return HttpResp(
+        code=200,
+        data=result,
+        msg="操作成功"
+    )
+
+@app.get("/pattern/reversal/{date}", description="今日反包股票")
+async def reversal(date):
+    log.info(f"查询今日反包股票 {date}")
+    results = get_reversal_stocks(date)
     return HttpResp(
         code=200,
         data=results,
         msg="操作成功"
     )
 
-@app.get("/pattern/break", description="今日断板（二板以上）股票")
-async def break_stocks():
-    log.info(f"查询今日断板股票")
-    results = get_break_stocks()
+@app.get("/pattern/break/{date}", description="今日断板（二板以上）股票")
+async def break_stocks(date):
+    log.info(f"查询今日断板股票 {date}")
+    results = get_break_stocks(date)
     return HttpResp(
         code=200,
         data=results,
