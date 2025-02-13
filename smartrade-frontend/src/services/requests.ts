@@ -1,5 +1,5 @@
 import apiClient from "./api";
-import type { APIResponse, Prediction, LimitUpDetail, LimitUpLadder, StockRankInfo, Evaluation, LimitUpLeadingStock, BoardDetails, TopStock, EmotionInfo, LonghuItem, LonghuInfo, BreakLossDataItem } from "./types";
+import type { APIResponse, Prediction, LimitUpDetail, LimitUpLadder, StockRankInfo, Evaluation, LimitUpLeadingStock, BoardDetails, TopStock, EmotionInfo, LonghuItem, LonghuInfo, BreakLossDataItem, CapacityLimitupStockInfo } from "./types";
 
 export async function getEvaluation(date: string) {
   return await apiClient.get<APIResponse<Evaluation[]>>(`evaluation/${date}`);
@@ -61,6 +61,10 @@ export async function getZdtTrend(date: string) {
 
 export async function getLonghuStats(date:string) {
   return await apiClient.get<APIResponse<LonghuInfo>>(`/stats/longhu/${date}`);
+}
+
+export async function getCapacityLimitupStats(date:string) {
+  return await apiClient.get<APIResponse<CapacityLimitupStockInfo[]>>(`/stats/limitup/capacity/${date}`);
 }
 
 export async function getBreakLossStats(date:string) {

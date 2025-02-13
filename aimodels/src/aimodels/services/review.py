@@ -397,6 +397,7 @@ def get_emotion_index(date: str, n: int):
     )
     
     dates = get_latest_N_date(date, n)
+    dates = reversed(dates)
     result_list = []
     try:
         for d in dates:
@@ -588,6 +589,32 @@ def compute_loss_effect(stock_code_list, date):
     except Exception as ex:
         log.error(ex)
 
+def get_limitup_capacity_stocks_stats(date: str):
+    """
+    统计涨停的容量个股.
+    """
+    lastest = get_latest_date(date)
+    threshold = 20000000000 # 流通阈值 200 亿
+    turnover_threshold = 1000000000 # 成交阈值 10 亿
+    query = ("SELECT code, name, currency_value, currency_value * turnover_rate / 100 AS turnover "
+       "FROM smartrade.limit_up_stocks "
+       f"WHERE `date` = {lastest} AND currency_value > {threshold};")
+    try:
+        with getConnection() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(query)
+                result = cursor.fetchall()
+                return [
+                    {
+                        'code': x[0],
+                        'name': x[1],
+                        'currency': x[2],
+                        'turnover': x[3]
+                    }
+                    for x in result if x[3] >= turnover_threshold
+                ]
+    except Exception as ex:
+        log.error(ex)
 
 if __name__ == '__main__':
-    print('')
+    print(get_limitup_capacity_stocks_stats('20241220'))

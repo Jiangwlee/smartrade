@@ -22,7 +22,8 @@ from aimodels.services.review import (
     get_emotion_index,
     get_zdt_stats,
     get_longhu_stats,
-    get_break_loss_effect)
+    get_break_loss_effect,
+    get_limitup_capacity_stocks_stats)
 from aimodels.services.pattern import (
     get_reversal_stocks,
     get_break_stocks
@@ -196,6 +197,16 @@ async def download(date: DatePair):
 async def zdt_stats(date):
     log.info(f"涨跌停统计 {date}")
     result = get_zdt_stats(date)
+    return HttpResp(
+        code=200,
+        data=result,
+        msg="操作成功"
+    )
+
+@app.get("/stats/limitup/capacity/{date}", description="容量涨停个股统计")
+async def limitup_capacity_stats(date):
+    log.info(f"容量涨停个股统计 {date}")
+    result = get_limitup_capacity_stocks_stats(date)
     return HttpResp(
         code=200,
         data=result,

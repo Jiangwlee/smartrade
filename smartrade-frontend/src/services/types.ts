@@ -155,3 +155,10 @@ export type BreakLossDataItem = {
       min: number;
   };
 };
+
+export type CapacityLimitupStockInfo = {
+  code: string;
+  name: string;
+  currency: number;
+  turnover: number;
+};

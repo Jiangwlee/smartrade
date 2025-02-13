@@ -74,7 +74,21 @@
         <el-divider class="card-divider"/>
 
         <el-row :gutter="6">
-          <el-col :span="12">
+          <el-col :span="8">
+            <el-card>
+              <template #header>
+                <div class="card-title">
+                  <span>容量涨停个股成交金额</span>
+                </div>
+              </template>
+              <ul v-if="capacityLimitupStocks.length > 0" class="card-list">
+                <li v-for="item in capacityLimitupStocks">
+                  {{ item.name }}: {{ (item.turnover / 100000000).toFixed(2) }} 亿
+                </li>
+              </ul>
+            </el-card>
+          </el-col>
+          <el-col :span="8">
             <el-card>
               <template #header>
                 <div class="card-title">
@@ -91,7 +105,7 @@
               </ul>
             </el-card>
           </el-col>
-          <el-col :span="12">
+          <el-col :span="8">
             <el-card>
               <template #header>
                 <div class="card-title">
@@ -167,14 +181,15 @@
 <script setup lang="ts">
 import { computed, watch, ref, onMounted } from 'vue'
 import { ElNotification } from 'element-plus'
-import { type BreakLossDataItem, type LimitUpLadder } from '@/services/types'
+import { type CapacityLimitupStockInfo, type BreakLossDataItem, type LimitUpLadder } from '@/services/types'
 import {
   downloadOneDay,
   getLimitUpLadder,
   getLimitUpDownTrend,
   getReversalStocks,
   getBreakStocks,
-  getBreakLossStats
+  getBreakLossStats,
+  getCapacityLimitupStats
 } from '@/services/requests'
 import EmotionReview from './EmotionReview.vue'
 import BoardReview from './BoardReview.vue'
@@ -196,6 +211,7 @@ const limitUpDownTrend = ref<Array<Array<string | number>>>([])
 const reversalPatternStocks = ref<Array<Array<string>>>([])
 const breakPatternStocks = ref<Array<Array<string>>>([])
 const breakLossStats = ref<BreakLossDataItem[]>([])
+const capacityLimitupStocks = ref<CapacityLimitupStockInfo[]>([])
 
 const fetchBreakLossStats = async () => {
   getBreakLossStats(formattedDate.value).then(
@@ -230,6 +246,12 @@ const review = async () => {
 const fetchLimitUpDownTrend = async () => {
   getLimitUpDownTrend(formatDate(pickedDate.value)).then((resp) => {
     limitUpDownTrend.value = resp.data.data
+  })
+}
+
+const fetchCapacityLimitupStocks = async () => {
+  getCapacityLimitupStats(formattedDate.value).then((resp) => {
+    capacityLimitupStocks.value = resp.data.data
   })
 }
 
@@ -308,6 +330,7 @@ watch(pickedDate, (newVal, oldVal) => {
     getReversalPatternStocks()
     getBreakPatternStocks()
     fetchBreakLossStats()
+    fetchCapacityLimitupStocks()
   }
 })
 
@@ -317,6 +340,7 @@ onMounted(() => {
   getReversalPatternStocks()
   getBreakPatternStocks()
   fetchBreakLossStats()
+  fetchCapacityLimitupStocks()
 })
 </script>
 
@@ -393,6 +417,7 @@ onMounted(() => {
 
 .card-list {
     text-align: left;
+    height: 120px;
 }
 
 .card-divider {

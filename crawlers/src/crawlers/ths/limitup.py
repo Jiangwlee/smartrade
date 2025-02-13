@@ -35,6 +35,10 @@ class LimitUpCrawler(CrawlerBase):
         self.date = date
         self.base_url = "http://data.10jqka.com.cn/dataapi/limit_up/limit_up_pool?limit=20&field=199112,10,9001,330323,330324,330325,9002,330329,133971,133970,1968584,3475914,9003"
         self.url_formatter = "&page={page}&filter=HS,GEM2STAR&order_field=330324&order_type=0&date={date}&_={timestamp_milliseconds}"
+        self.headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+
 
     def get_url(self, page, timestamp):
         return self.base_url + self.url_formatter.format(page=page, date=self.date, timestamp_milliseconds=timestamp)
@@ -43,7 +47,7 @@ class LimitUpCrawler(CrawlerBase):
         url = self.get_url(page, timestamp_in_milliseconds())
         
         log.info(f"爬取涨停板数据, URL: {url}")
-        response = requests.get(url)
+        response = requests.get(url, headers=self.headers)
         if response.status_code == 200:
             content = response.json()
             log.info("爬取涨停数据成功!")

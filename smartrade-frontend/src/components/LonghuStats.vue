@@ -71,12 +71,12 @@ onMounted(() => {
 .cards-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
+  gap: 5px;
   justify-content: flex-start;
 }
 
 .user-card {
-  width: 250px; /* 卡片宽度 */
+  width: 240px; /* 卡片宽度 */
 }
 
 .card-header {

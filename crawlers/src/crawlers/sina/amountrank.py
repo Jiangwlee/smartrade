@@ -2,10 +2,6 @@
 成交量排行
 """
 
-"""
-股吧人气排行
-"""
-
 import requests
 from typing import List
 from dto import AmountRankInfo
