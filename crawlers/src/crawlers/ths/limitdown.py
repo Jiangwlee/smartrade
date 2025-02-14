@@ -34,6 +34,9 @@ class LimitDownCrawler(CrawlerBase):
         self.date = date
         self.base_url = "https://data.10jqka.com.cn/dataapi/limit_up/lower_limit_pool?limit=20&field=199112,10,330333,330334,1968584,3475914,9004"
         self.url_formatter = "&page={page}&filter=HS,GEM2STAR&order_field=330334&order_type=0&date={today}&_={timestamp_milliseconds}"
+        self.headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
 
     def getUrl(self, page, timestamp):
         return self.base_url + self.url_formatter.format(page=page, today=self.date, timestamp_milliseconds=timestamp)
@@ -42,7 +45,7 @@ class LimitDownCrawler(CrawlerBase):
         url = self.getUrl(page, timestamp_in_milliseconds())
         
         log.info(f"爬取跌停板数据, URL: {url}")
-        response = requests.get(url)
+        response = requests.get(url, headers=self.headers)
         if response.status_code == 200:
             content = response.json()
             log.info("爬取跌停数据成功!")

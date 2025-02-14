@@ -15,12 +15,11 @@ services:
       - mysql_default
 
   aimodels:
-    image: jiangwl/smartrade:latest
+    image: jiangwl/smartrade:20250214
     container_name: smartrade-backend
     restart: always
     environment:
       DB_HOST: "db"  # 这里替换为实际数据库主机地址或者按需求填写
-    command: fastapi run main.py
     ports:
       - 8801:8000
     networks:

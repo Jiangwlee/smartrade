@@ -36,10 +36,13 @@ log = get_logger()
 class TopBlockCrawler(CrawlerBase):
     def __init__(self, datestr: str = today()) -> None:
         self.url = f"http://data.10jqka.com.cn/dataapi/limit_up/block_top?filter=HS,GEM2STAR&date={datestr}"
+        self.headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
 
     def crawl(self) -> List[TopBlocksInfo]:
         log.info(f"爬取最强板块, URL: {self.url}")
-        response = requests.get(self.url)
+        response = requests.get(self.url, headers=self.headers)
 
         if response.status_code == 200:
             content = response.json()
