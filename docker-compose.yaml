@@ -1,0 +1,59 @@
+version: '3'
+services:
+  nginx:
+    image: nginx:alpine
+    container_name: smartrade
+    restart: always # 保证容器自动重启
+    environment:
+      - TZ=Asia/Shanghai
+    ports:
+      - "8800:8800"
+    volumes:
+      - ./www/dist:/usr/share/nginx/html
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - smartrade
+    networks:
+      - smartrade_default
+
+  smartrade:
+    image: jiangwl/smartrade:20250215
+    container_name: smartrade-backend
+    restart: always
+    environment:
+      DB_HOST: "smartrade-db"  # 这里替换为实际数据库主机地址或者按需求填写
+      DB_USER: "root"
+      DB_PASSWORD: "YijbbGgnvv4VDF4Fuaip"
+      DB_DATABASE: "smartrade"
+      TZ: "Asia/Shanghai"
+    depends_on:
+      - db
+    ports:
+      - 8801:8000
+    networks:
+      - smartrade_default
+
+  db:
+    image: mysql:9.2.0
+    restart: always
+    container_name: smartrade-db
+    environment:
+      MYSQL_DATABASE: 'smartrade'
+      # So you don't have to use root, but you can if you like
+      MYSQL_USER: 'root'
+      # You can use whatever password you like
+      MYSQL_PASSWORD: 'YijbbGgnvv4VDF4Fuaip'
+      # Password for root access
+      MYSQL_ROOT_PASSWORD: 'YijbbGgnvv4VDF4Fuaip'
+    volumes:
+      - smartrade:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - smartrade_default
+      
+# Names our volume
+volumes:
+  smartrade:
+
+networks:
+  smartrade_default:

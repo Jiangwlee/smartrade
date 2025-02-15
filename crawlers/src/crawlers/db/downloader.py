@@ -1,0 +1,97 @@
+"""
+行情下载器.
+"""
+
+from crawlers.utils.logger import get_logger
+from crawlers.utils.dateutil import today, previous_date, trade_day_validator, get_last_N_trade_date, DateIterator
+from crawlers.ths.limitup import LimitUpCrawler
+from crawlers.ths.limitdown import LimitDownCrawler
+from crawlers.ths.limitupladder import LimitUpLadderCrawler
+from crawlers.ths.blocktop import TopBlockCrawler
+from crawlers.jrj.hangqing import HangQingCrawler, HangQingType
+from crawlers.db.dao import LimitUpDao, LimitDownkDao, LimitUpLadderDao, TopBlockDao, TopBlockStocksDao, StockHangQingkDao, ZdtHangQingkDao
+
+log = get_logger()
+
+class Downloader:
+    def __init__(self, start, end=today(), save_to_db=True) -> None:
+        self.start_date = start
+        self.end_data = end
+        self.save_to_db = save_to_db
+
+    def run(self):
+        validator = trade_day_validator(self.start_date, self.end_data)
+        date_iter = DateIterator(self.start_date, self.end_data, validator=validator)
+        cur_date = None
+        while date_iter.has_next():
+            # 如果第一次进入循环, 将 prev_date 设置为上一个交易日, 否则设置成上一个 cur_date, 然后更新 cur_date
+            prev_date = cur_date if cur_date is not None else get_last_N_trade_date(1, previous_date(self.start_date))[0]
+            cur_date = date_iter.next()
+            spider_dao_list = [
+                (LimitUpCrawler(cur_date), [LimitUpDao()]),
+                (LimitDownCrawler(cur_date), [LimitDownkDao()]),
+                (LimitUpLadderCrawler(cur_date), [LimitUpLadderDao()]),
+                (TopBlockCrawler(cur_date), [TopBlockDao(), TopBlockStocksDao()])
+            ]
+
+            log.info(f"------------------------------------ [{cur_date}] ------------------------------------")
+            # Crawl data of current date
+            for spider, dao_list in spider_dao_list:
+                result = spider.crawl()
+                if result == None or len(result) == 0:
+                    log.warning("未抓取到任何数据.")
+                elif self.save_to_db:
+                    for dao in dao_list:
+                        dao.deleteByDate(cur_date)
+                        dao.insert(cur_date, result)
+                        log.info("-" * 20)
+            # 获取上一个交易日的涨停板列表, 并抓取今日的竞价行情
+            limit_up_code_list = [(x[4], x[5]) for x in LimitUpDao().getItemsByDate(prev_date)]
+            self.__crawl_hang_qing(cur_date, limit_up_code_list)
+            self.__crawl_day_hang_qing(cur_date, limit_up_code_list)
+
+    def __crawl_hang_qing(self, date: str, code_list: list):
+        result = []
+        for code, name in code_list:
+            spider = HangQingCrawler(code, name, date, HangQingType.ONE_M, 1)
+            resp = spider.crawl()
+            # Just keep the open and close hangqing
+            result.append(resp[0])
+            result.append(resp[-1])
+        if len(result) == 0:
+            log.warning("未抓取到任何数据.")
+        elif self.save_to_db:
+            dao = StockHangQingkDao()
+            dao.deleteByDate(date)
+            dao.insert(date, result)
+
+    def __crawl_day_hang_qing(self, date: str, code_list: list):
+        # 获取当日涨停和跌停个股
+        zdt = []
+        records = []
+        # 跌停个股
+        lddao = LimitDownkDao()
+        result = lddao.getItemsByDate(date)
+        for item in result:
+            zdt.append((item[4], item[5]))
+        # 涨停个股
+        ludao = LimitUpDao()
+        result = ludao.getItemsByDate(date)
+        for item in result:
+            zdt.append((item[4], item[5]))
+        # 下载行情
+        for item in list(set(code_list + zdt)):
+            spider = HangQingCrawler(item[0], item[1], date, HangQingType.DAY, 1)
+            result = spider.crawl()
+            records.append(result[0])
+        print(records)
+        if len(records) == 0:
+            log.warning("未抓取到任何【涨跌停行情】数据.")
+        elif self.save_to_db:
+            dao = ZdtHangQingkDao()
+            dao.deleteByDate(date)
+            dao.insert(date, records)
+
+if __name__ == '__main__':
+    downloader = Downloader('20241217', '20241217', save_to_db=True)
+    downloader.run()

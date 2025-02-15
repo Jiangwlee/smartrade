@@ -1,0 +1,148 @@
+"""
+形态（模式）识别.
+"""
+import re
+from crawlers.db.connector import getConnection
+from smartrade.utils.logger import get_logger
+
+log = get_logger()
+
+def get_reversal_stocks(date: str):
+    """
+    查询反包个股：涨停-断板-再涨停
+    """
+    query = ("WITH TopDates AS ( "
+             "    SELECT DISTINCT `date` "
+             "    FROM smartrade.limit_up_stocks lus "
+             "    WHERE `date` <= %s "
+             "    ORDER BY `date` DESC "
+             "    LIMIT 3"
+             "),"
+             "AllDates AS ( "
+             "    SELECT "
+             "        MAX(`date`) AS D1, "
+             "        MIN(`date`) AS D3, "
+             "        (SELECT `date` FROM TopDates ORDER BY date DESC LIMIT 1 OFFSET 1) AS D2 "
+             "    FROM TopDates "
+             "), "
+             "D2Values AS ( "
+             "    SELECT code, name "
+             "    FROM smartrade.limit_up_stocks "
+             "    WHERE date = (SELECT D2 FROM AllDates) "
+             "), "
+             "D13Values AS ( "
+             "    SELECT code, name "
+             "    FROM smartrade.limit_up_stocks "
+             "    WHERE date IN (SELECT D1 FROM AllDates UNION SELECT D3 FROM AllDates) "
+             "    GROUP BY code, name "
+             "    HAVING COUNT(DISTINCT `date`) = 2 "
+             ") "
+             "SELECT code, name "
+             "FROM D13Values "
+             "WHERE code NOT IN (SELECT code FROM D2Values);")
+
+    try:
+        with getConnection() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(query, (date, ))
+                result = cursor.fetchall()
+                return result
+    except Exception as ex:
+        log.error(ex)
+
+def get_break_stocks(date: str):
+    """
+    查询断板个股：二连板及以上连板断板股
+    """
+    query = (
+        "WITH TopDates AS ( "
+        "    SELECT DISTINCT `date` "
+        "    FROM smartrade.limit_up_stocks lus "
+        "    WHERE `date` <= %s "
+        "    ORDER BY `date` DESC "
+        "    LIMIT 3 "
+        "), "
+        "LimitUpDates AS ( "
+        "    SELECT `date` "
+        "    FROM TopDates "
+        "    ORDER BY `date` ASC "
+        "    LIMIT 2 "
+        "), "
+        "Today AS ( "
+        "    SELECT `date` "
+        "    FROM TopDates "
+        "    ORDER BY `date` DESC "
+        "    LIMIT 1 "
+        "), "
+        "Candidates AS ( "
+        "    SELECT code, name "
+        "    FROM smartrade.limit_up_stocks "
+        "    WHERE `date` IN (SELECT `date` FROM LimitUpDates) "
+        "    GROUP BY code, name "
+        "    HAVING count(DISTINCT `date`) = 2 "
+        "), "
+        "Excludes AS ( "
+        "    SELECT code, name "
+        "    FROM smartrade.limit_up_stocks "
+        "    WHERE `date` IN (SELECT `date` FROM Today) "
+        ") "
+        "SELECT code, name "
+        "FROM Candidates "
+        "WHERE code NOT IN (SELECT code FROM Excludes);"
+    )
+
+
+    try:
+        with getConnection() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(query, (date, ))
+                result = cursor.fetchall()
+                return result
+    except Exception as ex:
+        log.error(ex)
+
+
+def get_break_of_first_limitup_stocks(date: str):
+    """
+    查询首板断板个股.
+    """
+    query = (
+        "WITH TopDates AS ("
+            "SELECT DISTINCT `date` "
+            "FROM smartrade.limit_up_stocks lus "
+            "WHERE `date` <= %s "
+            "ORDER BY `date` DESC "
+            "LIMIT 3"
+        "), "
+        "AllDates As ("
+            "SELECT MAX(`date`) AS D1, MIN(`date`) AS D3, (SELECT `date` FROM TopDates ORDER BY date DESC LIMIT 1 OFFSET 1) AS D2 "
+            "FROM TopDates"
+        "), "
+        "D2Values AS ("
+            "SELECT code, name "
+            "FROM smartrade.limit_up_stocks "
+            "WHERE date = (SELECT D2 FROM AllDates)"
+        "), "
+        "D13Values AS ("
+            "SELECT code, name "
+            "FROM smartrade.limit_up_stocks "
+            "WHERE date IN (SELECT D1 FROM AllDates UNION SELECT D3 FROM AllDates) "
+            "GROUP BY code, name"
+        ") "
+        "SELECT code, name "
+        "FROM D2Values "
+        "WHERE code NOT IN (SELECT code FROM D13Values)"
+    )
+
+
+    try:
+        with getConnection() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(query, (date, ))
+                result = cursor.fetchall()
+                return result
+    except Exception as ex:
+        log.error(ex)
+
+if __name__ == '__main__':
+    print(get_break_of_first_limitup_stocks('20241221'))
