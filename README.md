@@ -1,11 +1,14 @@
 # smartrade
+
 一个聪明的自动化复盘系统
 
 # 部署
 
-数据库
-
-TODO
+编译crawlers:
+```
+# cd crawlers
+# hatch build
+```
 
 构建后端 docker:
 

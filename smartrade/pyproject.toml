@@ -1,0 +1,63 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "smartrade"
+dynamic = ["version"]
+description = ''
+readme = "README.md"
+requires-python = ">=3.8"
+license = "MIT"
+keywords = []
+authors = [
+  { name = "Bruce Li", email = "jiangwlee@163.com" },
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
+]
+dependencies = [
+  "fastapi>=0.114.2"
+]
+
+[project.urls]
+Documentation = "https://github.com/jiangwlee/smartrade#readme"
+Issues = "https://github.com/jiangwlee/smartrade/issues"
+Source = "https://github.com/jiangwlee/smartrade"
+
+[tool.hatch.version]
+path = "src/smartrade/__about__.py"
+
+[tool.hatch.envs.types]
+extra-dependencies = [
+  "mypy>=1.0.0",
+]
+[tool.hatch.envs.types.scripts]
+check = "mypy --install-types --non-interactive {args:src/smartrade tests}"
+
+[tool.coverage.run]
+source_pkgs = ["smartrade", "tests"]
+branch = true
+parallel = true
+omit = [
+  "src/smartrade/__about__.py",
+]
+
+[tool.coverage.paths]
+smartrade = ["src/smartrade", "*/smartrade/src/smartrade"]
+tests = ["tests", "*/smartrade/tests"]
+
+[tool.coverage.report]
+exclude_lines = [
+  "no cov",
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:",
+]

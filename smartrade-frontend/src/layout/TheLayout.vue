@@ -6,13 +6,13 @@
           <el-col :span="24">
             <h1>Smartrade</h1>
           </el-col>
-          <el-col :span="24">
+          <!-- <el-col :span="24">
             <el-menu mode="horizontal" :router="true" :ellipsis="true">
               <el-menu-item index="/home">复盘</el-menu-item>
               <el-menu-item index="/prediction">连板预测</el-menu-item>
               <el-menu-item index="/evaluation">模型评估</el-menu-item>
             </el-menu>
-          </el-col>
+          </el-col> -->
         </el-row>
       </el-header>
 

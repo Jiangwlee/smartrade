@@ -1,16 +1,19 @@
 # 使用 Ubuntu 作为基础镜像
-FROM pytorch/pytorch:2.5.1-cuda12.4-cudnn9-runtime
+# 第一阶段：构建阶段
+FROM python:3.12
 
-# 更新源，安装必要的软件包
-RUN sed -i 's|http://[^ ]*|http://mirrors.aliyun.com/ubuntu|g' /etc/apt/sources.list && \
-    apt-get update && \
-    apt-get install -y curl cron supervisor
+# 设置阿里云镜像源
+RUN echo "deb https://mirrors.aliyun.com/debian/ bookworm main non-free non-free-firmware contrib\ndeb-src https://mirrors.aliyun.com/debian/ bookworm main non-free non-free-firmware contrib\ndeb https://mirrors.aliyun.com/debian-security/ bookworm-security main\ndeb-src https://mirrors.aliyun.com/debian-security/ bookworm-security main\ndeb https://mirrors.aliyun.com/debian/ bookworm-updates main non-free non-free-firmware contrib\ndeb-src https://mirrors.aliyun.com/debian/ bookworm-updates main non-free non-free-firmware contrib\ndeb https://mirrors.aliyun.com/debian/ bookworm-backports main non-free non-free-firmware contrib\ndeb-src https://mirrors.aliyun.com/debian/ bookworm-backports main non-free non-free-firmware contrib" > /etc/apt/sources.list
+
+# 安装系统依赖
+RUN apt-get update && \
+    apt-get install -y cron supervisor
 
 # 将应用程序文件复制到容器中
 COPY crawlers/dist /workspace
-COPY aimodels/ /workspace
-RUN pip install crawlers-0.0.1-py3-none-any.whl && \
-    pip install -i https://mirrors.aliyun.com/pypi/simple/ "fastapi[standard]" pandas scikit-learn
+COPY smartrade/ /workspace
+RUN pip install /workspace/crawlers-0.0.1-py3-none-any.whl && \
+    pip install -i https://mirrors.aliyun.com/pypi/simple/ "fastapi[standard]"
 
 # 复制cron和supervisor配置
 COPY smartrade_cron /workspace
@@ -22,7 +25,7 @@ RUN cp /workspace/smartrade_cron /etc/cron.d/smartrade_cron && \
     chmod 0644 /etc/cron.d/smartrade_cron && \
     crontab /etc/cron.d/smartrade_cron
 
-WORKDIR /workspace/src/aimodels/
+WORKDIR /workspace/src/smartrade/
 
 # 启动命令
 CMD ["supervisord", "-c", "/etc/supervisor/supervisord.conf"]

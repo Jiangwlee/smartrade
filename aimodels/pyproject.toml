@@ -30,9 +30,9 @@ dependencies = [
 ]
 
 [project.urls]
-Documentation = "https://github.com/U.N. Owen/aimodels#readme"
-Issues = "https://github.com/U.N. Owen/aimodels/issues"
-Source = "https://github.com/U.N. Owen/aimodels"
+Documentation = "https://github.com/jiangwlee/aimodels#readme"
+Issues = "https://github.com/jiangwlee/aimodels/issues"
+Source = "https://github.com/jiangwlee/aimodels"
 
 [tool.hatch.version]
 path = "src/aimodels/__about__.py"
