@@ -1,1 +1,1 @@
-30 15 * * * curl -X 'POST' 'http://localhost:8000/api/hangqing/' -H 'accept: application/json' -H 'Content-Type: application/json' -d '{ "start": "'$(date +%Y%m%d)'", "end": "'$(date +%Y%m%d)'"}'
+30 15 * * * sh -c /workspace/src/smartrade/jobs/crawlhq.sh
